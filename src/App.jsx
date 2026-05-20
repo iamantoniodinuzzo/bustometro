@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Analytics } from "@vercel/analytics/react"
 import * as THREE from 'three';
 import { Users, Baby, Utensils, Sparkles, ExternalLink, RefreshCw, BookOpen, Crown, Github, Code2 } from 'lucide-react';
 
@@ -337,7 +338,7 @@ const Bustometro = () => {
   const [showCredits, setShowCredits] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
 
-  const VERSION = '1.3.0';
+  const VERSION = '1.3.1';
 
   const parentele = [
     { value: 2.0, label: 'Genitore', sublabel: 'Mamma o papà', icon: '👨‍👩‍👧' },
@@ -628,12 +629,12 @@ const Bustometro = () => {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '6px', backgroundColor: c.bgAlt }}>
                   <div style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: c.burgundy, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span style={{ color: '#FFFCF5', fontSize: '14px', fontFamily: 'Fraunces, serif', fontStyle: 'italic' }}>I</span>
+                    <span style={{ color: '#FFFCF5', fontSize: '14px', fontFamily: 'Fraunces, serif', fontStyle: 'italic' }}>A</span>
                   </div>
                   <div>
-                    <div className="display-font" style={{ fontWeight: 600, color: c.ink }}>Indisparte</div>
-                    <a href="https://github.com/Indisparte" target="_blank" rel="noopener noreferrer" style={{ fontSize: '11px', color: c.gold, display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}>
-                      <Github size={11} /> github.com/Indisparte
+                    <div className="display-font" style={{ fontWeight: 600, color: c.ink }}>Antonio Di Nuzzo</div>
+                    <a href="https://github.com/iamantoniodinuzzo" target="_blank" rel="noopener noreferrer" style={{ fontSize: '11px', color: c.gold, display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}>
+                      <Github size={11} /> github.com/iamantoniodinuzzo
                     </a>
                   </div>
                 </div>
@@ -682,7 +683,7 @@ const Bustometro = () => {
               <div>
                 <div className="display-font" style={{ fontWeight: 500, marginBottom: '8px', color: c.ink }}>Changelog</div>
                 <div style={{ fontSize: '11px', lineHeight: 1.9, paddingLeft: '8px' }}>
-                  <div><strong style={{ color: c.burgundy }}>v1.3.0</strong> — Busta 3D Three.js, polvere d'oro, coriandoli, count-up, micro-animazioni</div>
+                  <div><strong style={{ color: c.burgundy }}>v1.3.1</strong> — Busta 3D Three.js, polvere d'oro, coriandoli, count-up, micro-animazioni</div>
                   <div style={{ opacity: 0.6 }}><strong>v1.0.0</strong> — Versione iniziale</div>
                 </div>
               </div>
@@ -695,11 +696,12 @@ const Bustometro = () => {
             </div>
             <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '2px' }}>
               Formula © Amedeo Colella · Sviluppato da{' '}
-              <a href="https://github.com/Indisparte" target="_blank" rel="noopener noreferrer" style={{ color: c.gold, textDecoration: 'none' }}>Indisparte</a>
+              <a href="https://github.com/iamantoniodinuzzo" target="_blank" rel="noopener noreferrer" style={{ color: c.gold, textDecoration: 'none' }}>Antonio Di Nuzzo</a>
             </div>
           </div>
         </footer>
       </div>
+      <Analytics />
     </div>
   );
 };
