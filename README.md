@@ -4,7 +4,7 @@
 > La formula napoletana di Amedeo Colella, vestita di codice.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Indisparte/bustometro)
-![Version](https://img.shields.io/badge/version-1.3.0-7a1f2b?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.3.1-7a1f2b?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-b8924f?style=flat-square)
 ![React](https://img.shields.io/badge/React-18-61dafb?style=flat-square&logo=react)
 ![Vite](https://img.shields.io/badge/Vite-5-646cff?style=flat-square&logo=vite)
