@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/react"
 import * as THREE from 'three';
 import { Users, Baby, Utensils, Sparkles, ExternalLink, RefreshCw, BookOpen, Crown, Github, Code2 } from 'lucide-react';
 
