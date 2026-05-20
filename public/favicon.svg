@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Envelope body -->
+  <rect x="2" y="8" width="28" height="18" rx="2" fill="#F0E6D2" stroke="#D8CDB8" stroke-width="1"/>
+  <!-- Envelope flap (triangle) -->
+  <polygon points="2,8 30,8 16,20" fill="#E8DCC6" stroke="#D8CDB8" stroke-width="1"/>
+  <!-- Wax seal -->
+  <circle cx="16" cy="22" r="3.5" fill="#7A1F2B"/>
+  <circle cx="16" cy="22" r="1.8" fill="none" stroke="#B8924F" stroke-width="0.8"/>
+</svg>
