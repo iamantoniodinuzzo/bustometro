@@ -4,7 +4,7 @@
 > La formula napoletana di Amedeo Colella, vestita di codice.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Indisparte/bustometro)
-![Version](https://img.shields.io/badge/version-1.3.1-7a1f2b?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.4.0-7a1f2b?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-b8924f?style=flat-square)
 ![React](https://img.shields.io/badge/React-18-61dafb?style=flat-square&logo=react)
 ![Vite](https://img.shields.io/badge/Vite-5-646cff?style=flat-square&logo=vite)
@@ -17,6 +17,8 @@
 - 🔮 **Busta 3D interattiva** in Three.js — reagisce al mouse e al touch con parallax
 - ✨ **Polvere d'oro** ambientale e coriandoli celebrativi al completamento del calcolo
 - 🔢 **Counter animato** con easing cubico sul risultato finale
+- 🔗 **Link condivisibile** — URL con stato pre-compilato, copia in un click e feedback visivo
+- 🖼️ **Card condivisibile** — genera immagini PNG via Canvas API in formato Story (9:16) e Post (1:1) con download, condivisione WhatsApp e copia negli appunti
 - 📱 **Mobile-first**, completamente responsive
 - ♿ **Accessibile** — rispetta `prefers-reduced-motion`
 - 📖 **Crediti completi** all'inventore della formula e allo sviluppatore
@@ -107,7 +109,8 @@ Ogni push su `main` eseguirà un nuovo deploy automaticamente.
 ```
 bustometro/
 ├── public/
-│   └── favicon.svg           # Favicon busta con ceralacca
+│   ├── favicon.svg           # Favicon busta con ceralacca
+│   └── og-image.png          # Open Graph image 1200×630
 ├── src/
 │   ├── App.jsx               # Componente principale + 3D + animazioni
 │   ├── main.jsx              # Entry point React
@@ -130,7 +133,9 @@ bustometro/
 | **Lucide React** | Icone |
 | **Fraunces** | Font display (Google Fonts) |
 | **DM Sans** | Font body (Google Fonts) |
-| **Canvas 2D API** | Polvere d'oro e coriandoli |
+| **Canvas 2D API** | Polvere d'oro, coriandoli e generazione card PNG |
+| **Web Share API** | Condivisione nativa su mobile |
+| **Clipboard API** | Copia link e immagini |
 
 ---
 

@@ -358,7 +358,7 @@ const Bustometro = () => {
     if (validFigure.includes(d)) setFigura(d);
   }, []);
 
-  const VERSION = '1.3.1';
+  const VERSION = '1.4.0';
 
   const parentele = [
     { value: 2.0, label: 'Genitore', sublabel: 'Mamma o papà', icon: '👨‍👩‍👧' },
