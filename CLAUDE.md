@@ -1,5 +1,3 @@
-# Bustometro — Claude guidance
-
 ## Source code
 
 All application code lives in **`src/`**. Entry point: `src/main.jsx`. Entire app logic and UI: `src/App.jsx`.
