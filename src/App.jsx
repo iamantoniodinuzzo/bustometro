@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Analytics } from "@vercel/analytics/react"
 import * as THREE from 'three';
-import { Users, Baby, Utensils, Sparkles, ExternalLink, RefreshCw, BookOpen, Crown, Github, Code2 } from 'lucide-react';
+import { Users, Baby, Utensils, Sparkles, ExternalLink, RefreshCw, BookOpen, Crown, Github, Code2, Link2, Check } from 'lucide-react';
 
 // ============================================================
 // HOOKS
@@ -336,7 +336,24 @@ const Bustometro = () => {
   const [figura, setFigura] = useState(null);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const p = parseFloat(params.get('p'));
+    const i = parseInt(params.get('i'), 10);
+    const b = parseInt(params.get('b'), 10);
+    const cv = parseFloat(params.get('c'));
+    const d = parseFloat(params.get('d'));
+    const validParentele = [2.0, 1.5, 1.2, 1.0];
+    const validFigure = [1.5, 1.3, 1.2, 1.0];
+    if (validParentele.includes(p)) setParentela(p);
+    if (Number.isFinite(i) && i >= 1 && i <= 10) setAdulti(i);
+    if (Number.isFinite(b) && b >= 0 && b <= 10) setBambini(b);
+    if (Number.isFinite(cv) && cv >= 30 && cv <= 200) setCostoCoperto(cv);
+    if (validFigure.includes(d)) setFigura(d);
+  }, []);
 
   const VERSION = '1.3.1';
 
@@ -369,6 +386,22 @@ const Bustometro = () => {
     setCostoCoperto(80);
     setFigura(null);
     setShowBreakdown(false);
+    window.history.replaceState(null, '', window.location.pathname);
+  };
+
+  const buildShareUrl = () => {
+    const params = new URLSearchParams({ p: parentela, i: adulti, b: bambini, c: costoCoperto, d: figura });
+    return `${window.location.origin}${window.location.pathname}?${params}`;
+  };
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(buildShareUrl());
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      /* clipboard non disponibile, ignora */
+    }
   };
 
   const c = {
@@ -589,9 +622,14 @@ const Bustometro = () => {
                     </div>
                   </div>
                 )}
-                <button onClick={reset} style={{ marginTop: '24px', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '11px', padding: '8px 16px', borderRadius: '999px', border: `1px solid ${c.goldSoft}`, color: c.goldSoft, background: 'transparent', cursor: 'pointer' }}>
-                  <RefreshCw size={12} /> Ricomincia
-                </button>
+                <div style={{ marginTop: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <button onClick={reset} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '11px', padding: '8px 16px', borderRadius: '999px', border: `1px solid ${c.goldSoft}`, color: c.goldSoft, background: 'transparent', cursor: 'pointer' }}>
+                    <RefreshCw size={12} /> Ricomincia
+                  </button>
+                  <button onClick={copyLink} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '11px', padding: '8px 16px', borderRadius: '999px', border: `1px solid ${linkCopied ? c.gold : c.goldSoft}`, color: linkCopied ? c.gold : c.goldSoft, background: linkCopied ? 'rgba(184,146,79,0.12)' : 'transparent', cursor: 'pointer', transition: 'all .2s' }}>
+                    {linkCopied ? <><Check size={12} /> Link copiato!</> : <><Link2 size={12} /> Copia link</>}
+                  </button>
+                </div>
               </>
             ) : (
               <div style={{ padding: '32px 0' }}>
