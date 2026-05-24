@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Analytics } from "@vercel/analytics/react"
 import * as THREE from 'three';
-import { Users, Baby, Utensils, Sparkles, ExternalLink, RefreshCw, BookOpen, Crown, Github, Code2 } from 'lucide-react';
+import { Users, Baby, Utensils, Sparkles, ExternalLink, RefreshCw, BookOpen, Crown, Github, Code2, Link2, Check } from 'lucide-react';
 
 // ============================================================
 // HOOKS
@@ -336,9 +336,29 @@ const Bustometro = () => {
   const [figura, setFigura] = useState(null);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [nomineSposi, setNomineSposi] = useState('');
+  const [cardFormat, setCardFormat] = useState('story');
+  const [cardCopied, setCardCopied] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
 
-  const VERSION = '1.3.1';
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const p = parseFloat(params.get('p'));
+    const i = parseInt(params.get('i'), 10);
+    const b = parseInt(params.get('b'), 10);
+    const cv = parseFloat(params.get('c'));
+    const d = parseFloat(params.get('d'));
+    const validParentele = [2.0, 1.5, 1.2, 1.0];
+    const validFigure = [1.5, 1.3, 1.2, 1.0];
+    if (validParentele.includes(p)) setParentela(p);
+    if (Number.isFinite(i) && i >= 1 && i <= 10) setAdulti(i);
+    if (Number.isFinite(b) && b >= 0 && b <= 10) setBambini(b);
+    if (Number.isFinite(cv) && cv >= 30 && cv <= 200) setCostoCoperto(cv);
+    if (validFigure.includes(d)) setFigura(d);
+  }, []);
+
+  const VERSION = '1.4.0';
 
   const parentele = [
     { value: 2.0, label: 'Genitore', sublabel: 'Mamma o papà', icon: '👨‍👩‍👧' },
@@ -369,6 +389,203 @@ const Bustometro = () => {
     setCostoCoperto(80);
     setFigura(null);
     setShowBreakdown(false);
+    window.history.replaceState(null, '', window.location.pathname);
+  };
+
+  const buildShareUrl = () => {
+    const params = new URLSearchParams({ p: parentela, i: adulti, b: bambini, c: costoCoperto, d: figura });
+    return `${window.location.origin}${window.location.pathname}?${params}`;
+  };
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(buildShareUrl());
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      /* clipboard non disponibile, ignora */
+    }
+  };
+
+  const generateCard = async (format) => {
+    await document.fonts.ready;
+    const isStory = format === 'story';
+    const W = 1080;
+    const H = isStory ? 1920 : 1080;
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    const BG = '#F5EFE4';
+    const INK = '#2B1810';
+    const BURGUNDY = '#7A1F2B';
+    const GOLD = '#B8924F';
+    const GOLD_SOFT = '#D4B584';
+    const INK_SOFT = '#6B5B4F';
+    const BORDER = '#D8CDB8';
+
+    ctx.fillStyle = BG;
+    ctx.fillRect(0, 0, W, H);
+
+    const M = 56;
+    ctx.strokeStyle = BORDER;
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(M, M, W - M * 2, H - M * 2);
+
+    const CL = 44;
+    ctx.strokeStyle = GOLD;
+    ctx.lineWidth = 3;
+    [[M, M + CL, M, M, M + CL, M], [W - M - CL, M, W - M, M, W - M, M + CL],
+     [M, H - M - CL, M, H - M, M + CL, H - M], [W - M - CL, H - M, W - M, H - M, W - M, H - M - CL]]
+      .forEach(([x1, y1, x2, y2, x3, y3]) => {
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.lineTo(x3, y3); ctx.stroke();
+      });
+
+    const CX = W / 2;
+    const nomeText = nomineSposi.trim();
+    const amountStr = `€${arrotondato}`;
+    const rangeStr = `€${rangeMin} — €${rangeMax}`;
+
+    if (isStory) {
+      let Y = H * 0.15;
+      ctx.fillStyle = GOLD;
+      ctx.font = '500 38px "DM Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('BUSTOMETRO', CX, Y);
+      Y += 50;
+      ctx.strokeStyle = GOLD;
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(CX - 100, Y); ctx.lineTo(CX + 100, Y); ctx.stroke();
+      Y += 90;
+      if (nomeText) {
+        ctx.fillStyle = INK;
+        ctx.font = 'italic 400 58px "Fraunces", Georgia, serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(nomeText, CX, Y);
+        Y += 90;
+      }
+      ctx.fillStyle = INK_SOFT;
+      ctx.font = '300 30px "DM Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('LA TUA BUSTA', CX, Y);
+      Y += 100;
+      ctx.fillStyle = BURGUNDY;
+      const amtSize = arrotondato >= 10000 ? 200 : arrotondato >= 1000 ? 250 : 300;
+      ctx.font = `700 ${amtSize}px "Fraunces", Georgia, serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(amountStr, CX, Y + amtSize * 0.85);
+      Y += amtSize + 40;
+      ctx.fillStyle = GOLD_SOFT;
+      ctx.font = 'italic 400 54px "Fraunces", Georgia, serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(rangeStr, CX, Y);
+      Y += 60;
+      ctx.fillStyle = INK_SOFT;
+      ctx.font = '300 28px "DM Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('range consigliato', CX, Y);
+      ctx.fillStyle = GOLD;
+      ctx.font = '400 34px "DM Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('bustometro.vercel.app', CX, H - 170);
+      ctx.fillStyle = INK_SOFT;
+      ctx.font = '300 26px "DM Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('by Indisparte', CX, H - 120);
+    } else {
+      let Y = H * 0.15;
+      ctx.fillStyle = GOLD;
+      ctx.font = '500 32px "DM Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('BUSTOMETRO', CX, Y);
+      Y += 44;
+      ctx.strokeStyle = GOLD;
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(CX - 80, Y); ctx.lineTo(CX + 80, Y); ctx.stroke();
+      Y += 70;
+      if (nomeText) {
+        ctx.fillStyle = INK;
+        ctx.font = 'italic 400 46px "Fraunces", Georgia, serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(nomeText, CX, Y);
+        Y += 70;
+      }
+      ctx.fillStyle = INK_SOFT;
+      ctx.font = '300 26px "DM Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('LA TUA BUSTA', CX, Y);
+      Y += 80;
+      ctx.fillStyle = BURGUNDY;
+      const amtSize = arrotondato >= 10000 ? 160 : arrotondato >= 1000 ? 200 : 230;
+      ctx.font = `700 ${amtSize}px "Fraunces", Georgia, serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(amountStr, CX, Y + amtSize * 0.85);
+      Y += amtSize + 40;
+      ctx.fillStyle = GOLD_SOFT;
+      ctx.font = 'italic 400 44px "Fraunces", Georgia, serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(rangeStr, CX, Y);
+      Y += 52;
+      ctx.fillStyle = INK_SOFT;
+      ctx.font = '300 24px "DM Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('range consigliato', CX, Y);
+      ctx.fillStyle = GOLD;
+      ctx.font = '400 28px "DM Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('bustometro.vercel.app', CX, H - 140);
+      ctx.fillStyle = INK_SOFT;
+      ctx.font = '300 22px "DM Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('by Indisparte', CX, H - 96);
+    }
+
+    return canvas;
+  };
+
+  const downloadCard = async (format) => {
+    const canvas = await generateCard(format);
+    canvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `bustometro-${format}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  };
+
+  const shareWhatsApp = () => {
+    const text = encodeURIComponent(`💌 Bustometro dice €${arrotondato} in busta!\n${buildShareUrl()}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  };
+
+  const copyCard = async (format) => {
+    try {
+      const canvas = await generateCard(format);
+      canvas.toBlob(async (blob) => {
+        try {
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+          setCardCopied(true);
+          setTimeout(() => setCardCopied(false), 2000);
+        } catch {
+          /* Clipboard API immagini non supportata */
+        }
+      }, 'image/png');
+    } catch { /* ignora */ }
+  };
+
+  const nativeShare = async (format) => {
+    try {
+      const canvas = await generateCard(format);
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], `bustometro-${format}.png`, { type: 'image/png' });
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'Bustometro', text: `La mia busta: €${arrotondato} 💌` });
+        }
+      }, 'image/png');
+    } catch { /* ignora */ }
   };
 
   const c = {
@@ -589,9 +806,14 @@ const Bustometro = () => {
                     </div>
                   </div>
                 )}
-                <button onClick={reset} style={{ marginTop: '24px', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '11px', padding: '8px 16px', borderRadius: '999px', border: `1px solid ${c.goldSoft}`, color: c.goldSoft, background: 'transparent', cursor: 'pointer' }}>
-                  <RefreshCw size={12} /> Ricomincia
-                </button>
+                <div style={{ marginTop: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <button onClick={reset} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '11px', padding: '8px 16px', borderRadius: '999px', border: `1px solid ${c.goldSoft}`, color: c.goldSoft, background: 'transparent', cursor: 'pointer' }}>
+                    <RefreshCw size={12} /> Ricomincia
+                  </button>
+                  <button onClick={copyLink} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '11px', padding: '8px 16px', borderRadius: '999px', border: `1px solid ${linkCopied ? c.gold : c.goldSoft}`, color: linkCopied ? c.gold : c.goldSoft, background: linkCopied ? 'rgba(184,146,79,0.12)' : 'transparent', cursor: 'pointer', transition: 'all .2s' }}>
+                    {linkCopied ? <><Check size={12} /> Link copiato!</> : <><Link2 size={12} /> Copia link</>}
+                  </button>
+                </div>
               </>
             ) : (
               <div style={{ padding: '32px 0' }}>
@@ -601,6 +823,46 @@ const Bustometro = () => {
             )}
           </div>
         </section>
+
+        {/* SHARE CARD */}
+        {isComplete && (
+          <section style={{ marginBottom: '40px', padding: '24px', borderRadius: '8px', backgroundColor: c.card, border: `1px solid ${c.border}` }}>
+            <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.2em', color: c.inkSoft, marginBottom: '16px' }}>
+              Condividi risultato
+            </div>
+            <input
+              type="text"
+              placeholder="Nome sposi (es. Marco & Giulia)"
+              value={nomineSposi}
+              onChange={(e) => setNomineSposi(e.target.value)}
+              maxLength={50}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: '6px', border: `1px solid ${c.border}`, background: c.bg, color: c.ink, fontSize: '13px', fontFamily: 'inherit', outline: 'none', marginBottom: '12px', boxSizing: 'border-box' }}
+            />
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              {['story', 'post'].map(f => (
+                <button key={f} onClick={() => setCardFormat(f)} style={{ flex: 1, padding: '8px', borderRadius: '6px', fontSize: '12px', border: `1px solid ${cardFormat === f ? c.burgundy : c.border}`, backgroundColor: cardFormat === f ? c.burgundy : 'transparent', color: cardFormat === f ? '#FFFCF5' : c.inkSoft, cursor: 'pointer', transition: 'all .2s' }}>
+                  {f === 'story' ? '📱 Story 9:16' : '⬛ Post 1:1'}
+                </button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button onClick={() => downloadCard(cardFormat)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px', borderRadius: '999px', border: `1px solid ${c.border}`, color: c.ink, background: c.bg, cursor: 'pointer' }}>
+                ⬇ Scarica
+              </button>
+              <button onClick={shareWhatsApp} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px', borderRadius: '999px', border: `1px solid ${c.border}`, color: c.ink, background: c.bg, cursor: 'pointer' }}>
+                💬 WhatsApp
+              </button>
+              <button onClick={() => copyCard(cardFormat)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px', borderRadius: '999px', border: `1px solid ${cardCopied ? c.gold : c.border}`, color: cardCopied ? c.gold : c.ink, background: cardCopied ? 'rgba(184,146,79,0.1)' : c.bg, cursor: 'pointer', transition: 'all .2s' }}>
+                {cardCopied ? '✓ Copiata!' : '📋 Copia immagine'}
+              </button>
+              {typeof navigator !== 'undefined' && navigator.share && (
+                <button onClick={() => nativeShare(cardFormat)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px', borderRadius: '999px', border: `1px solid ${c.border}`, color: c.ink, background: c.bg, cursor: 'pointer' }}>
+                  ↗ Condividi
+                </button>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Disclaimer */}
         <div style={{ textAlign: 'center', marginBottom: '32px', fontSize: '12px', fontStyle: 'italic', padding: '0 16px', color: c.inkSoft }}>

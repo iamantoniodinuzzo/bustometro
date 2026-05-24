@@ -32,3 +32,12 @@ lerna-debug.log*
 
 # Vercel
 .vercel
+
+#claude
+.claude
+
+#serena
+.serena
+
+#playwright mcp
+.playwright-mcp/
