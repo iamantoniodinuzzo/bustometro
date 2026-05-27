@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Analytics } from "@vercel/analytics/react"
 import * as THREE from 'three';
 import { Users, Baby, Utensils, Sparkles, ExternalLink, RefreshCw, BookOpen, Crown, Github, Code2, Link2, Check } from 'lucide-react';
@@ -385,6 +385,17 @@ const Bustometro = () => {
   const rangeMin = Math.round((arrotondato * 0.9) / 10) * 10;
   const rangeMax = Math.round((arrotondato * 1.1) / 10) * 10;
   const displayedAmount = useCountUp(isComplete ? arrotondato : 0, 1100);
+
+  const easterEggMessage = useMemo(() => {
+    if (!isComplete) return null;
+    if (parentela === 2.0 && figura === 1.5 && adulti >= 3)
+      return 'Gli sposi ti vogliono come padrino di battesimo del primo figlio.';
+    if (arrotondato > 800)
+      return 'A questo punto compragli anche la casa.';
+    if (parentela === 1.0 && figura === 1.0 && adulti === 1 && bambini === 0 && costoCoperto <= 50)
+      return 'Vabbè dai, almeno gli auguri sinceri 💀';
+    return null;
+  }, [isComplete, parentela, figura, adulti, bambini, costoCoperto, arrotondato]);
 
   const reset = () => {
     setParentela(null);
@@ -837,6 +848,11 @@ const Bustometro = () => {
                 {suocera && (
                   <div className="reveal-4 display-font" style={{ fontStyle: 'italic', fontSize: '12px', marginBottom: '16px', color: c.gold, opacity: 0.8 }}>
                     👁️ Tua suocera sa già quanto hai messo. Lo sa.
+                  </div>
+                )}
+                {easterEggMessage && (
+                  <div className="reveal-5 display-font" style={{ fontStyle: 'italic', fontSize: '13px', marginBottom: '16px', padding: '10px 16px', borderRadius: '6px', border: `1px dashed ${c.gold}`, color: c.goldSoft }}>
+                    {easterEggMessage}
                   </div>
                 )}
                 <button onClick={() => setShowBreakdown(!showBreakdown)} style={{ fontSize: '11px', textDecoration: 'underline', textUnderlineOffset: '4px', background: 'none', border: 'none', color: c.goldSoft, cursor: 'pointer' }}>
