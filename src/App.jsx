@@ -340,6 +340,8 @@ const Bustometro = () => {
   const [nomineSposi, setNomineSposi] = useState('');
   const [cardFormat, setCardFormat] = useState('story');
   const [cardCopied, setCardCopied] = useState(false);
+  const [testimone, setTestimone] = useState(false);
+  const [suocera, setSuocera] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
@@ -356,9 +358,11 @@ const Bustometro = () => {
     if (Number.isFinite(b) && b >= 0 && b <= 10) setBambini(b);
     if (Number.isFinite(cv) && cv >= 30 && cv <= 200) setCostoCoperto(cv);
     if (validFigure.includes(d)) setFigura(d);
+    if (params.get('t') === '1') setTestimone(true);
+    if (params.get('s') === '1') setSuocera(true);
   }, []);
 
-  const VERSION = '1.4.0';
+  const VERSION = '1.5.0';
 
   const parentele = [
     { value: 2.0, label: 'Genitore', sublabel: 'Mamma o papà', icon: '👨‍👩‍👧' },
@@ -376,7 +380,7 @@ const Bustometro = () => {
 
   const presetCoperto = [50, 80, 120, 160];
   const isComplete = parentela !== null && figura !== null;
-  const calcolo = isComplete ? (bambini / 2 + adulti) * (costoCoperto * 1.3) * parentela * figura : 0;
+  const calcolo = isComplete ? (bambini / 2 + adulti) * (costoCoperto * 1.3) * parentela * figura * (testimone ? 1.3 : 1) : 0;
   const arrotondato = Math.round(calcolo / 10) * 10;
   const rangeMin = Math.round((arrotondato * 0.9) / 10) * 10;
   const rangeMax = Math.round((arrotondato * 1.1) / 10) * 10;
@@ -389,11 +393,16 @@ const Bustometro = () => {
     setCostoCoperto(80);
     setFigura(null);
     setShowBreakdown(false);
+    setTestimone(false);
+    setSuocera(false);
     window.history.replaceState(null, '', window.location.pathname);
   };
 
   const buildShareUrl = () => {
-    const params = new URLSearchParams({ p: parentela, i: adulti, b: bambini, c: costoCoperto, d: figura });
+    const obj = { p: parentela, i: adulti, b: bambini, c: costoCoperto, d: figura };
+    if (testimone) obj.t = '1';
+    if (suocera) obj.s = '1';
+    const params = new URLSearchParams(obj);
     return `${window.location.origin}${window.location.pathname}?${params}`;
   };
 
@@ -469,7 +478,15 @@ const Bustometro = () => {
       ctx.font = '300 30px "DM Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('LA TUA BUSTA', CX, Y);
-      Y += 100;
+      Y += 60;
+      if (testimone) {
+        ctx.fillStyle = BURGUNDY;
+        ctx.font = 'italic 500 36px "Fraunces", Georgia, serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('💍 Testimone', CX, Y);
+        Y += 50;
+      }
+      Y += 40;
       ctx.fillStyle = BURGUNDY;
       const amtSize = arrotondato >= 10000 ? 200 : arrotondato >= 1000 ? 250 : 300;
       ctx.font = `700 ${amtSize}px "Fraunces", Georgia, serif`;
@@ -489,6 +506,12 @@ const Bustometro = () => {
       ctx.font = '400 34px "DM Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('bustometro.vercel.app', CX, H - 170);
+      if (suocera) {
+        ctx.fillStyle = GOLD_SOFT;
+        ctx.font = 'italic 300 26px "DM Sans", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('👁️ Tua suocera lo sa', CX, H - 200);
+      }
       ctx.fillStyle = INK_SOFT;
       ctx.font = '300 26px "DM Sans", sans-serif';
       ctx.textAlign = 'center';
@@ -515,7 +538,15 @@ const Bustometro = () => {
       ctx.font = '300 26px "DM Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('LA TUA BUSTA', CX, Y);
-      Y += 80;
+      Y += 44;
+      if (testimone) {
+        ctx.fillStyle = BURGUNDY;
+        ctx.font = 'italic 500 30px "Fraunces", Georgia, serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('💍 Testimone', CX, Y);
+        Y += 40;
+      }
+      Y += 36;
       ctx.fillStyle = BURGUNDY;
       const amtSize = arrotondato >= 10000 ? 160 : arrotondato >= 1000 ? 200 : 230;
       ctx.font = `700 ${amtSize}px "Fraunces", Georgia, serif`;
@@ -535,6 +566,12 @@ const Bustometro = () => {
       ctx.font = '400 28px "DM Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('bustometro.vercel.app', CX, H - 140);
+      if (suocera) {
+        ctx.fillStyle = GOLD_SOFT;
+        ctx.font = 'italic 300 22px "DM Sans", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('👁️ Tua suocera lo sa', CX, H - 166);
+      }
       ctx.fillStyle = INK_SOFT;
       ctx.font = '300 22px "DM Sans", sans-serif';
       ctx.textAlign = 'center';
@@ -683,6 +720,15 @@ const Bustometro = () => {
               );
             })}
           </div>
+          <button onClick={() => setTestimone(!testimone)}
+            className={`step-card${testimone ? ' stamped' : ''}`}
+            style={{ marginTop: '12px', width: '100%', padding: '14px 16px', borderRadius: '8px', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: testimone ? c.burgundy : c.card, border: `1px solid ${testimone ? c.burgundy : c.border}`, color: testimone ? '#FFFCF5' : c.ink, boxShadow: testimone ? '0 6px 18px rgba(122,31,43,.18)' : 'none', cursor: 'pointer' }}>
+            <div>
+              <div className="display-font" style={{ fontSize: '14px', fontWeight: 500 }}>Testimone 💍</div>
+              <div style={{ fontSize: '11px', marginTop: '2px', color: testimone ? c.goldSoft : c.inkSoft }}>Hai detto sì. Anche al portafogli.</div>
+            </div>
+            <div className="display-font" style={{ fontSize: '13px', color: testimone ? c.goldSoft : c.inkSoft }}>×1.3</div>
+          </button>
         </section>
 
         {/* STEP ii – Partecipanti */}
@@ -761,6 +807,14 @@ const Bustometro = () => {
               );
             })}
           </div>
+          <button onClick={() => setSuocera(!suocera)}
+            className={`step-card${suocera ? ' stamped' : ''}`}
+            style={{ marginTop: '12px', width: '100%', padding: '14px 16px', borderRadius: '8px', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: suocera ? c.burgundy : c.card, border: `1px solid ${suocera ? c.burgundy : c.border}`, color: suocera ? '#FFFCF5' : c.ink, boxShadow: suocera ? '0 6px 18px rgba(122,31,43,.18)' : 'none', cursor: 'pointer' }}>
+            <div>
+              <div className="display-font" style={{ fontSize: '14px', fontWeight: 500 }}>Modalità Suocera 👁️</div>
+              <div style={{ fontSize: '11px', marginTop: '2px', color: suocera ? c.goldSoft : c.inkSoft }}>Lei lo sa. Sempre.</div>
+            </div>
+          </button>
         </section>
 
         {/* RESULT */}
@@ -777,9 +831,14 @@ const Bustometro = () => {
                 <div className="number-display" style={{ fontSize: 'clamp(4rem,18vw,7rem)', lineHeight: 1, margin: '12px 0', color: c.bg, fontWeight: 300 }}>
                   €{displayedAmount}
                 </div>
-                <div className="display-font" style={{ fontStyle: 'italic', fontSize: '13px', marginBottom: '20px', color: c.goldSoft }}>
+                <div className="display-font" style={{ fontStyle: 'italic', fontSize: '13px', marginBottom: '12px', color: c.goldSoft }}>
                   range consigliato: €{rangeMin} — €{rangeMax}
                 </div>
+                {suocera && (
+                  <div className="reveal-4 display-font" style={{ fontStyle: 'italic', fontSize: '12px', marginBottom: '16px', color: c.gold, opacity: 0.8 }}>
+                    👁️ Tua suocera sa già quanto hai messo. Lo sa.
+                  </div>
+                )}
                 <button onClick={() => setShowBreakdown(!showBreakdown)} style={{ fontSize: '11px', textDecoration: 'underline', textUnderlineOffset: '4px', background: 'none', border: 'none', color: c.goldSoft, cursor: 'pointer' }}>
                   {showBreakdown ? 'Nascondi calcolo' : 'Vedi come è stato calcolato'}
                 </button>
@@ -793,6 +852,7 @@ const Bustometro = () => {
                       ['Coperto × 1,3:', `€${(costoCoperto * 1.3).toFixed(2)}`],
                       ['× Parentela:', `×${parentela}`],
                       ['× Figura:', `×${figura}`],
+                      ...(testimone ? [['× Testimone:', '×1.3']] : []),
                     ].map(([label, val]) => (
                       <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontFamily: 'monospace', opacity: 0.9, marginBottom: '6px' }}>
                         <span>{label}</span><span>{val}</span>
