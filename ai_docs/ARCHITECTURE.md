@@ -70,6 +70,8 @@ graph TD
 | `figura` | `number \| null` | Style coefficient (D): 1.5 · 1.3 · 1.2 · 1.0 |
 | `nomineSposi` | `string` | Optional couple name for share card |
 | `cardFormat` | `'story' \| 'post'` | Canvas export format |
+| `testimone` | `boolean` | Witness mode — applies ×1.3 multiplier on total (default `false`) |
+| `suocera` | `boolean` | Mother-in-law mode — cosmetic note, no calculation change (default `false`) |
 
 `isComplete = parentela !== null && figura !== null`
 
@@ -78,7 +80,17 @@ graph TD
 ## Shareable URL params
 
 ```
-?p=<parentela>&i=<adulti>&b=<bambini>&c=<costoCoperto>&d=<figura>
+?p=<parentela>&i=<adulti>&b=<bambini>&c=<costoCoperto>&d=<figura>[&t=1][&s=1]
 ```
 
-Example: `?p=1.2&i=2&b=1&c=120&d=1.3`
+Example: `?p=1.2&i=2&b=1&c=120&d=1.3&t=1`
+
+| Param | Description |
+|-------|-------------|
+| `p` | Parentela coefficient |
+| `i` | Adults count |
+| `b` | Children count |
+| `c` | Cover cost |
+| `d` | Figura coefficient |
+| `t` | `1` if Testimone mode active (omitted when false) |
+| `s` | `1` if Suocera mode active (omitted when false) |
