@@ -1,6 +1,6 @@
 {
   "name": "bustometro",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Calcola quanto mettere in busta al matrimonio. Formula napoletana di Amedeo Colella.",
   "type": "module",
   "author": "Indisparte <https://github.com/Indisparte>",
