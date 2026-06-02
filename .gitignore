@@ -41,3 +41,8 @@ lerna-debug.log*
 
 #playwright mcp
 .playwright-mcp/
+
+# Verify screenshots (temp, never commit)
+verify_*.png
+page-*.png
+.env*

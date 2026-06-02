@@ -4,7 +4,7 @@
 > La formula napoletana di Amedeo Colella, vestita di codice.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Indisparte/bustometro)
-![Version](https://img.shields.io/badge/version-1.5.0-7a1f2b?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.6.0-7a1f2b?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-b8924f?style=flat-square)
 ![React](https://img.shields.io/badge/React-18-61dafb?style=flat-square&logo=react)
 ![Vite](https://img.shields.io/badge/Vite-5-646cff?style=flat-square&logo=vite)
@@ -22,6 +22,8 @@
 - 💍 **Modalità Testimone** — moltiplicatore ×1.3 per chi ha detto sì (al portafogli)
 - 👁️ **Modalità Suocera** — nota cosmetica che ricorda che lei lo sa sempre
 - 🎭 **Easter egg contestuali** — messaggi umoristici per il tirchio totale, lo squarcione massimo e il range assurdo (>€800)
+- 🗺️ **Toggle regionale** — selettore Nord / Centro / Sud che imposta automaticamente il costo coperto e il coefficiente figura in base alle medie regionali italiane
+- 📊 **Social proof passiva** — contatore globale buste calcolate nel mese e media anonima per categoria, via Upstash Redis (graceful degradation inclusa)
 - 📱 **Mobile-first**, completamente responsive
 - ♿ **Accessibile** — rispetta `prefers-reduced-motion`
 - 📖 **Crediti completi** all'inventore della formula e allo sviluppatore
@@ -111,6 +113,8 @@ Ogni push su `main` eseguirà un nuovo deploy automaticamente.
 
 ```
 bustometro/
+├── api/
+│   └── stats.js              # Vercel Edge Function — social proof stats
 ├── public/
 │   ├── favicon.svg           # Favicon busta con ceralacca
 │   └── og-image.png          # Open Graph image 1200×630
@@ -139,6 +143,8 @@ bustometro/
 | **Canvas 2D API** | Polvere d'oro, coriandoli e generazione card PNG |
 | **Web Share API** | Condivisione nativa su mobile |
 | **Clipboard API** | Copia link e immagini |
+| **Upstash Redis** | Storage social proof stats via REST |
+| **Vercel Edge Functions** | API `/api/stats` — aggregati anonimi |
 
 ---
 

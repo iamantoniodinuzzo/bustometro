@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-06-02
+
+### Added
+- **Toggle regionale** — selettore Nord / Centro / Sud nella sezione coperto che imposta automaticamente il costo coperto (€70 / €80 / €90) e, per Nord e Sud, preseleziona il coefficiente figura (1.0 e 1.2 rispettivamente), basandosi sulle medie regionali italiane. Il parametro si serializza nell'URL condivisibile (`?r=`).
+- **Social proof passiva** — contatore globale *"X buste calcolate questo mese"* visibile in header e media anonima per categoria parentela nella schermata risultato (*"Media in questa categoria: €Y"*). Dati aggregati anonimi (nessun dato personale salvato) tramite Vercel Edge Function `/api/stats` + Upstash Redis. Aggiornamento ogni 5 minuti via cache CDN. Graceful degradation: se il backend non risponde, i contatori non appaiono e l'app funziona identicamente.
+
 ## [1.5.0] - 2026-05-27
 
 ### Added

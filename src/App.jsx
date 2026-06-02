@@ -48,6 +48,29 @@ const usePrefersReducedMotion = () => {
   return reduced;
 };
 
+// Mappa coefficiente parentela → categoria stats
+const mapParentela = (coeff) => {
+  if (coeff === 2.0) return 'genitori';
+  if (coeff === 1.5) return 'fratelli';
+  if (coeff === 1.2) return 'cugini';
+  return 'amici';
+};
+
+const useStats = () => {
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/stats')
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.available) setStats(data);
+      })
+      .catch(() => { /* degradation: stats resta null */ });
+  }, []);
+
+  return stats;
+};
+
 // ============================================================
 // ATMOSPHERIC LAYER — Gold dust + petals burst
 // ============================================================
@@ -342,7 +365,9 @@ const Bustometro = () => {
   const [cardCopied, setCardCopied] = useState(false);
   const [testimone, setTestimone] = useState(false);
   const [suocera, setSuocera] = useState(false);
+  const [regione, setRegione] = useState('centro');
   const reducedMotion = usePrefersReducedMotion();
+  const stats = useStats();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -360,9 +385,11 @@ const Bustometro = () => {
     if (validFigure.includes(d)) setFigura(d);
     if (params.get('t') === '1') setTestimone(true);
     if (params.get('s') === '1') setSuocera(true);
+    const r = params.get('r');
+    if (['nord', 'centro', 'sud'].includes(r)) setRegione(r);
   }, []);
 
-  const VERSION = '1.5.0';
+  const VERSION = '1.6.0';
 
   const parentele = [
     { value: 2.0, label: 'Genitore', sublabel: 'Mamma o papà', icon: '👨‍👩‍👧' },
@@ -376,6 +403,12 @@ const Bustometro = () => {
     { value: 1.3, label: 'Medio', subnap: '«Ngannaruto»', emoji: '🙂', desc: 'Generoso ma con misura' },
     { value: 1.2, label: 'Sufficiente', subnap: '«Bella figura»', emoji: '🤏', desc: 'Dignitoso, niente di più' },
     { value: 1.0, label: 'Normale', subnap: '«Standard»', emoji: '😐', desc: 'Né troppo né troppo poco' },
+  ];
+
+  const regioni = [
+    { id: 'nord',   label: 'Nord',   emoji: '🏔️', coperto: 70, figura: 1.0  },
+    { id: 'centro', label: 'Centro', emoji: '🏛️', coperto: 80, figura: null },
+    { id: 'sud',    label: 'Sud',    emoji: '🌋', coperto: 90, figura: 1.2  },
   ];
 
   const presetCoperto = [50, 80, 120, 160];
@@ -397,12 +430,35 @@ const Bustometro = () => {
     return null;
   }, [isComplete, parentela, figura, adulti, bambini, costoCoperto, arrotondato]);
 
+  // Incremento stats anonimo — una sola volta per sessione, debounce 2s
+  useEffect(() => {
+    if (!isComplete) return;
+    const timer = setTimeout(() => {
+      if (sessionStorage.getItem('bm_stat_sent')) return;
+      sessionStorage.setItem('bm_stat_sent', '1');
+      fetch('/api/stats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: mapParentela(parentela), amount: arrotondato }),
+      }).catch(() => { /* silenzioso */ });
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [isComplete, parentela, arrotondato]);
+
+  const selectRegione = (id) => {
+    const cfg = regioni.find((r) => r.id === id);
+    setRegione(id);
+    setCostoCoperto(cfg.coperto);
+    setFigura(cfg.figura);
+  };
+
   const reset = () => {
     setParentela(null);
     setAdulti(1);
     setBambini(0);
     setCostoCoperto(80);
     setFigura(null);
+    setRegione('centro');
     setShowBreakdown(false);
     setTestimone(false);
     setSuocera(false);
@@ -410,7 +466,7 @@ const Bustometro = () => {
   };
 
   const buildShareUrl = () => {
-    const obj = { p: parentela, i: adulti, b: bambini, c: costoCoperto, d: figura };
+    const obj = { p: parentela, i: adulti, b: bambini, c: costoCoperto, d: figura, r: regione };
     if (testimone) obj.t = '1';
     if (suocera) obj.s = '1';
     const params = new URLSearchParams(obj);
@@ -694,10 +750,18 @@ const Bustometro = () => {
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
             <span className="shimmer-text" style={{ color: c.gold, fontSize: '11px', letterSpacing: '0.4em' }}>✦ ✦ ✦</span>
           </div>
-          <div className="reveal-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '4px 12px', borderRadius: '999px', marginBottom: '16px', backgroundColor: c.bgAlt, color: c.inkSoft, fontSize: '11px', letterSpacing: '0.1em' }}>
+          <div className="reveal-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '4px 12px', borderRadius: '999px', marginBottom: stats?.total ? '8px' : '16px', backgroundColor: c.bgAlt, color: c.inkSoft, fontSize: '11px', letterSpacing: '0.1em' }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: c.burgundy, display: 'inline-block' }} />
             BUSTOMETRO · v{VERSION}
           </div>
+          {stats?.total > 0 && (
+            <div className="reveal-1" style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+              <span style={{ fontSize: '11px', color: c.inkSoft, letterSpacing: '0.08em' }}>
+                <span style={{ color: c.gold }}>✦</span>{' '}
+                {stats.total.toLocaleString('it-IT')} buste calcolate questo mese
+              </span>
+            </div>
+          )}
           <h1 className="display-font reveal-2" style={{ color: c.ink, fontSize: 'clamp(2.5rem, 8vw, 4.5rem)', fontWeight: 400, lineHeight: '0.95', margin: '0 0 12px', fontVariationSettings: "'opsz' 144, 'SOFT' 100, 'WONK' 1" }}>
             Quanto metto<br />
             <em style={{ color: c.burgundy, fontStyle: 'italic', fontWeight: 300 }}>in busta?</em>
@@ -748,6 +812,25 @@ const Bustometro = () => {
             <span className="display-font" style={{ color: c.gold, fontStyle: 'italic', fontSize: '24px' }}>ii.</span>
             <h2 className="display-font" style={{ color: c.ink, fontSize: '22px', margin: 0 }}>Chi partecipa?</h2>
           </div>
+
+          {/* Selettore regionale */}
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+              {regioni.map((reg) => {
+                const sel = regione === reg.id;
+                return (
+                  <button key={reg.id} onClick={() => selectRegione(reg.id)} style={{ padding: '6px 14px', borderRadius: '999px', fontSize: '13px', backgroundColor: sel ? c.gold : 'transparent', color: sel ? c.ink : c.inkSoft, border: `1px solid ${sel ? c.gold : c.border}`, fontWeight: sel ? 600 : 400, cursor: 'pointer', transition: 'all .2s' }}>
+                    {reg.emoji} {reg.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="display-font" style={{ fontSize: '12px', fontStyle: 'italic', color: c.inkSoft }}>
+              <Sparkles size={12} style={{ display: 'inline', marginBottom: '-2px', marginRight: '4px', color: c.gold }} />
+              <em>Le aspettative variano. Come i cognati.</em>
+            </div>
+          </div>
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {[
               { icon: <Users size={18} style={{ color: c.burgundy }} />, label: 'Adulti', sub: 'Te incluso', val: adulti, setter: setAdulti, min: 1, max: 10 },
@@ -853,6 +936,12 @@ const Bustometro = () => {
                 {easterEggMessage && (
                   <div className="reveal-5 display-font" style={{ fontStyle: 'italic', fontSize: '13px', marginBottom: '16px', padding: '10px 16px', borderRadius: '6px', border: `1px dashed ${c.gold}`, color: c.goldSoft }}>
                     {easterEggMessage}
+                  </div>
+                )}
+                {stats?.categories?.[mapParentela(parentela)]?.avg != null && (
+                  <div className="reveal-5" style={{ fontSize: '11px', marginBottom: '16px', color: c.goldSoft, opacity: 0.8 }}>
+                    Media in questa categoria:{' '}
+                    <span style={{ color: c.gold }}>€{stats.categories[mapParentela(parentela)].avg}</span>
                   </div>
                 )}
                 <button onClick={() => setShowBreakdown(!showBreakdown)} style={{ fontSize: '11px', textDecoration: 'underline', textUnderlineOffset: '4px', background: 'none', border: 'none', color: c.goldSoft, cursor: 'pointer' }}>
