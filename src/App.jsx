@@ -48,6 +48,29 @@ const usePrefersReducedMotion = () => {
   return reduced;
 };
 
+// Mappa coefficiente parentela → categoria stats
+const mapParentela = (coeff) => {
+  if (coeff === 2.0) return 'genitori';
+  if (coeff === 1.5) return 'fratelli';
+  if (coeff === 1.2) return 'cugini';
+  return 'amici';
+};
+
+const useStats = () => {
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/stats')
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.available) setStats(data);
+      })
+      .catch(() => { /* degradation: stats resta null */ });
+  }, []);
+
+  return stats;
+};
+
 // ============================================================
 // ATMOSPHERIC LAYER — Gold dust + petals burst
 // ============================================================
@@ -344,6 +367,7 @@ const Bustometro = () => {
   const [suocera, setSuocera] = useState(false);
   const [regione, setRegione] = useState('centro');
   const reducedMotion = usePrefersReducedMotion();
+  const stats = useStats();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -405,6 +429,21 @@ const Bustometro = () => {
       return 'Vabbè dai, almeno gli auguri sinceri 💀';
     return null;
   }, [isComplete, parentela, figura, adulti, bambini, costoCoperto, arrotondato]);
+
+  // Incremento stats anonimo — una sola volta per sessione, debounce 2s
+  useEffect(() => {
+    if (!isComplete) return;
+    const timer = setTimeout(() => {
+      if (sessionStorage.getItem('bm_stat_sent')) return;
+      sessionStorage.setItem('bm_stat_sent', '1');
+      fetch('/api/stats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: mapParentela(parentela), amount: arrotondato }),
+      }).catch(() => { /* silenzioso */ });
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [isComplete, parentela, arrotondato]);
 
   const selectRegione = (id) => {
     const cfg = regioni.find((r) => r.id === id);
@@ -711,10 +750,18 @@ const Bustometro = () => {
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
             <span className="shimmer-text" style={{ color: c.gold, fontSize: '11px', letterSpacing: '0.4em' }}>✦ ✦ ✦</span>
           </div>
-          <div className="reveal-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '4px 12px', borderRadius: '999px', marginBottom: '16px', backgroundColor: c.bgAlt, color: c.inkSoft, fontSize: '11px', letterSpacing: '0.1em' }}>
+          <div className="reveal-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '4px 12px', borderRadius: '999px', marginBottom: stats?.total ? '8px' : '16px', backgroundColor: c.bgAlt, color: c.inkSoft, fontSize: '11px', letterSpacing: '0.1em' }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: c.burgundy, display: 'inline-block' }} />
             BUSTOMETRO · v{VERSION}
           </div>
+          {stats?.total > 0 && (
+            <div className="reveal-1" style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+              <span style={{ fontSize: '11px', color: c.inkSoft, letterSpacing: '0.08em' }}>
+                <span style={{ color: c.gold }}>✦</span>{' '}
+                {stats.total.toLocaleString('it-IT')} buste calcolate questo mese
+              </span>
+            </div>
+          )}
           <h1 className="display-font reveal-2" style={{ color: c.ink, fontSize: 'clamp(2.5rem, 8vw, 4.5rem)', fontWeight: 400, lineHeight: '0.95', margin: '0 0 12px', fontVariationSettings: "'opsz' 144, 'SOFT' 100, 'WONK' 1" }}>
             Quanto metto<br />
             <em style={{ color: c.burgundy, fontStyle: 'italic', fontWeight: 300 }}>in busta?</em>
@@ -889,6 +936,12 @@ const Bustometro = () => {
                 {easterEggMessage && (
                   <div className="reveal-5 display-font" style={{ fontStyle: 'italic', fontSize: '13px', marginBottom: '16px', padding: '10px 16px', borderRadius: '6px', border: `1px dashed ${c.gold}`, color: c.goldSoft }}>
                     {easterEggMessage}
+                  </div>
+                )}
+                {stats?.categories?.[mapParentela(parentela)]?.avg != null && (
+                  <div className="reveal-5" style={{ fontSize: '11px', marginBottom: '16px', color: c.goldSoft, opacity: 0.8 }}>
+                    Media in questa categoria:{' '}
+                    <span style={{ color: c.gold }}>€{stats.categories[mapParentela(parentela)].avg}</span>
                   </div>
                 )}
                 <button onClick={() => setShowBreakdown(!showBreakdown)} style={{ fontSize: '11px', textDecoration: 'underline', textUnderlineOffset: '4px', background: 'none', border: 'none', color: c.goldSoft, cursor: 'pointer' }}>
