@@ -1,15 +1,19 @@
 import { Redis } from '@upstash/redis';
 
-export const config = { runtime: 'edge' };
-
 const CATEGORIES = ['amici', 'cugini', 'fratelli', 'genitori'];
-const TTL = 40 * 86400; // 40 giorni in secondi
+const TTL = 40 * 86400;
 
 function currentMonth() {
-  return new Date().toISOString().slice(0, 7); // "YYYY-MM"
+  return new Date().toISOString().slice(0, 7);
 }
 
-export default async function handler(req) {
+function json(res, data, status = 200, headers = {}) {
+  res.status(status).setHeader('Content-Type', 'application/json');
+  Object.entries(headers).forEach(([k, v]) => res.setHeader(k, v));
+  res.end(JSON.stringify(data));
+}
+
+export default async function handler(req, res) {
   const method = req.method;
 
   const url = process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
@@ -20,11 +24,8 @@ export default async function handler(req) {
     if (!url || !token) throw new Error('missing env');
     redis = new Redis({ url, token });
   } catch {
-    // Env vars assenti: degradation silenziosa
-    if (method === 'GET') {
-      return Response.json({ available: false }, { status: 200 });
-    }
-    return new Response(null, { status: 204 });
+    if (method === 'GET') return json(res, { available: false });
+    return res.status(204).end();
   }
 
   // ------------------------------------------------------------------
@@ -43,27 +44,18 @@ export default async function handler(req) {
       const results = await pipe.exec();
 
       const total = Number(results[0] ?? 0);
-
       const categories = {};
       CATEGORIES.forEach((cat, i) => {
         const sum = Number(results[1 + i * 2] ?? 0);
         const cnt = Number(results[2 + i * 2] ?? 0);
-        categories[cat] = {
-          avg: cnt > 0 ? Math.round((sum / cnt) / 10) * 10 : null,
-        };
+        categories[cat] = { avg: cnt > 0 ? Math.round((sum / cnt) / 10) * 10 : null };
       });
 
-      return Response.json(
-        { available: true, month, total, categories },
-        {
-          status: 200,
-          headers: {
-            'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-          },
-        }
-      );
+      return json(res, { available: true, month, total, categories }, 200, {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      });
     } catch {
-      return Response.json({ available: false }, { status: 200 });
+      return json(res, { available: false });
     }
   }
 
@@ -72,44 +64,37 @@ export default async function handler(req) {
   // ------------------------------------------------------------------
   if (method === 'POST') {
     try {
-      let body;
+      let body = {};
       try {
-        body = await req.json();
+        const chunks = [];
+        for await (const chunk of req) chunks.push(chunk);
+        body = JSON.parse(Buffer.concat(chunks).toString());
       } catch {
-        return new Response('Bad Request', { status: 400 });
+        return res.status(400).end('Bad Request');
       }
 
-      const { category, amount } = body ?? {};
+      const { category, amount } = body;
 
-      if (!CATEGORIES.includes(category)) {
-        return new Response('Invalid category', { status: 400 });
-      }
+      if (!CATEGORIES.includes(category)) return res.status(400).end('Invalid category');
 
       const amt = Number(amount);
-      if (!Number.isInteger(amt) || amt < 30 || amt > 2000) {
-        return new Response('Invalid amount', { status: 400 });
-      }
+      if (!Number.isInteger(amt) || amt < 30 || amt > 2000) return res.status(400).end('Invalid amount');
 
       const month = currentMonth();
-      const countKey = `stats:count:${month}`;
-      const sumKey = `stats:sum:${category}:${month}`;
-      const cntKey = `stats:cnt:${category}:${month}`;
-
       const pipe = redis.pipeline();
-      pipe.incr(countKey);
-      pipe.expire(countKey, TTL);
-      pipe.incrby(sumKey, amt);
-      pipe.expire(sumKey, TTL);
-      pipe.incr(cntKey);
-      pipe.expire(cntKey, TTL);
+      pipe.incr(`stats:count:${month}`);
+      pipe.expire(`stats:count:${month}`, TTL);
+      pipe.incrby(`stats:sum:${category}:${month}`, amt);
+      pipe.expire(`stats:sum:${category}:${month}`, TTL);
+      pipe.incr(`stats:cnt:${category}:${month}`);
+      pipe.expire(`stats:cnt:${category}:${month}`, TTL);
       await pipe.exec();
 
-      return new Response(null, { status: 204 });
+      return res.status(204).end();
     } catch {
-      // Errore Redis: 204 silenzioso, mai blocca il client
-      return new Response(null, { status: 204 });
+      return res.status(204).end();
     }
   }
 
-  return new Response('Method Not Allowed', { status: 405 });
+  res.status(405).end('Method Not Allowed');
 }
