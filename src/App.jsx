@@ -342,6 +342,7 @@ const Bustometro = () => {
   const [cardCopied, setCardCopied] = useState(false);
   const [testimone, setTestimone] = useState(false);
   const [suocera, setSuocera] = useState(false);
+  const [regione, setRegione] = useState('centro');
   const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
@@ -360,6 +361,8 @@ const Bustometro = () => {
     if (validFigure.includes(d)) setFigura(d);
     if (params.get('t') === '1') setTestimone(true);
     if (params.get('s') === '1') setSuocera(true);
+    const r = params.get('r');
+    if (['nord', 'centro', 'sud'].includes(r)) setRegione(r);
   }, []);
 
   const VERSION = '1.5.0';
@@ -376,6 +379,12 @@ const Bustometro = () => {
     { value: 1.3, label: 'Medio', subnap: '«Ngannaruto»', emoji: '🙂', desc: 'Generoso ma con misura' },
     { value: 1.2, label: 'Sufficiente', subnap: '«Bella figura»', emoji: '🤏', desc: 'Dignitoso, niente di più' },
     { value: 1.0, label: 'Normale', subnap: '«Standard»', emoji: '😐', desc: 'Né troppo né troppo poco' },
+  ];
+
+  const regioni = [
+    { id: 'nord',   label: 'Nord',   emoji: '🏔️', coperto: 70, figura: 1.0  },
+    { id: 'centro', label: 'Centro', emoji: '🏛️', coperto: 80, figura: null },
+    { id: 'sud',    label: 'Sud',    emoji: '🌋', coperto: 90, figura: 1.2  },
   ];
 
   const presetCoperto = [50, 80, 120, 160];
@@ -397,12 +406,20 @@ const Bustometro = () => {
     return null;
   }, [isComplete, parentela, figura, adulti, bambini, costoCoperto, arrotondato]);
 
+  const selectRegione = (id) => {
+    const cfg = regioni.find((r) => r.id === id);
+    setRegione(id);
+    setCostoCoperto(cfg.coperto);
+    setFigura(cfg.figura);
+  };
+
   const reset = () => {
     setParentela(null);
     setAdulti(1);
     setBambini(0);
     setCostoCoperto(80);
     setFigura(null);
+    setRegione('centro');
     setShowBreakdown(false);
     setTestimone(false);
     setSuocera(false);
@@ -410,7 +427,7 @@ const Bustometro = () => {
   };
 
   const buildShareUrl = () => {
-    const obj = { p: parentela, i: adulti, b: bambini, c: costoCoperto, d: figura };
+    const obj = { p: parentela, i: adulti, b: bambini, c: costoCoperto, d: figura, r: regione };
     if (testimone) obj.t = '1';
     if (suocera) obj.s = '1';
     const params = new URLSearchParams(obj);
@@ -748,6 +765,25 @@ const Bustometro = () => {
             <span className="display-font" style={{ color: c.gold, fontStyle: 'italic', fontSize: '24px' }}>ii.</span>
             <h2 className="display-font" style={{ color: c.ink, fontSize: '22px', margin: 0 }}>Chi partecipa?</h2>
           </div>
+
+          {/* Selettore regionale */}
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+              {regioni.map((reg) => {
+                const sel = regione === reg.id;
+                return (
+                  <button key={reg.id} onClick={() => selectRegione(reg.id)} style={{ padding: '6px 14px', borderRadius: '999px', fontSize: '13px', backgroundColor: sel ? c.gold : 'transparent', color: sel ? c.ink : c.inkSoft, border: `1px solid ${sel ? c.gold : c.border}`, fontWeight: sel ? 600 : 400, cursor: 'pointer', transition: 'all .2s' }}>
+                    {reg.emoji} {reg.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="display-font" style={{ fontSize: '12px', fontStyle: 'italic', color: c.inkSoft }}>
+              <Sparkles size={12} style={{ display: 'inline', marginBottom: '-2px', marginRight: '4px', color: c.gold }} />
+              <em>Le aspettative variano. Come i cognati.</em>
+            </div>
+          </div>
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {[
               { icon: <Users size={18} style={{ color: c.burgundy }} />, label: 'Adulti', sub: 'Te incluso', val: adulti, setter: setAdulti, min: 1, max: 10 },
