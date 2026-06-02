@@ -45,3 +45,4 @@ lerna-debug.log*
 # Verify screenshots (temp, never commit)
 verify_*.png
 page-*.png
+.env*
