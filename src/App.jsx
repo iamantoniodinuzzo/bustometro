@@ -389,7 +389,7 @@ const Bustometro = () => {
     if (['nord', 'centro', 'sud'].includes(r)) setRegione(r);
   }, []);
 
-  const VERSION = '1.5.0';
+  const VERSION = '1.6.0';
 
   const parentele = [
     { value: 2.0, label: 'Genitore', sublabel: 'Mamma o papà', icon: '👨‍👩‍👧' },
