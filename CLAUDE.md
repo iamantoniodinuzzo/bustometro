@@ -8,7 +8,7 @@ In pipelines/automation always use `git finish -y` (skips all interactive prompt
 
 All application code lives in **`src/`**. Entry point: `src/main.jsx`. Entire app logic and UI: `src/App.jsx`.
 
-Backend-lite: Vercel Edge Functions in **`api/`** (currently: `api/stats.js` — social proof stats via Upstash Redis). Env vars: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`. For local backend testing use `vercel dev` (not `vite dev`).
+Backend-lite: Vercel Edge Functions in **`api/`** (currently: `api/stats.js` — social proof stats via Upstash Redis). Env vars (Vercel Marketplace naming): `KV_REST_API_URL`, `KV_REST_API_TOKEN`. For local backend testing use `vercel dev` (not `vite dev`).
 
 Static assets served as-is from `public/`.
 

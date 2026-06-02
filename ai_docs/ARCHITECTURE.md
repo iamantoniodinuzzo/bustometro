@@ -112,7 +112,7 @@ Edge Functions live in `api/` at the project root. Vercel auto-detects them.
 |---|---|
 | Runtime | Vercel Edge (`export const config = { runtime: 'edge' }`) |
 | Storage | Upstash Redis via `@upstash/redis` (`Redis.fromEnv()`) |
-| Env vars | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` (Vercel dashboard + `.env.local`) |
+| Env vars | `KV_REST_API_URL` + `KV_REST_API_TOKEN` (Vercel Marketplace naming) — o `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` in alternativa |
 
 **GET `/api/stats`** — monthly aggregates, CDN-cached 5 min (`s-maxage=300, stale-while-revalidate=600`).  
 Returns `{ available, month, total, categories: { amici, cugini, fratelli, genitori: { avg } } }`.  

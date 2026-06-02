@@ -12,9 +12,13 @@ function currentMonth() {
 export default async function handler(req) {
   const method = req.method;
 
+  const url = process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
+
   let redis;
   try {
-    redis = Redis.fromEnv();
+    if (!url || !token) throw new Error('missing env');
+    redis = new Redis({ url, token });
   } catch {
     // Env vars assenti: degradation silenziosa
     if (method === 'GET') {
