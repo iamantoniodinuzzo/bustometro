@@ -709,9 +709,9 @@ const Bustometro = () => {
 
   const stepper = (val, setter, min, max) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-      <button onClick={() => setter(Math.max(min, val - 1))} style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: c.bgAlt, color: c.ink, border: `1px solid ${c.border}`, cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
+      <button className="stepper-btn" disabled={val <= min} onClick={() => setter(Math.max(min, val - 1))} style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: c.bgAlt, color: c.ink, border: `1px solid ${c.border}`, fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: val <= min ? 0.35 : 1, cursor: val <= min ? 'default' : 'pointer', transition: 'opacity .15s, transform .1s' }}>−</button>
       <span className="display-font" style={{ fontSize: '24px', width: '32px', textAlign: 'center', color: c.ink, display: 'inline-block' }}>{val}</span>
-      <button onClick={() => setter(Math.min(max, val + 1))} style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: c.bgAlt, color: c.ink, border: `1px solid ${c.border}`, cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+      <button className="stepper-btn" disabled={val >= max} onClick={() => setter(Math.min(max, val + 1))} style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: c.bgAlt, color: c.ink, border: `1px solid ${c.border}`, fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: val >= max ? 0.35 : 1, cursor: val >= max ? 'default' : 'pointer', transition: 'opacity .15s, transform .1s' }}>+</button>
     </div>
   );
 
@@ -740,8 +740,13 @@ const Bustometro = () => {
         .step-card:active{transform:scale(.99)}
         .stamped{animation:stampIn .45s cubic-bezier(.34,1.56,.64,1)}
         .grain{background-image:radial-gradient(${c.inkSoft} .5px,transparent .5px);background-size:3px 3px;opacity:.025;pointer-events:none;position:fixed;inset:0;z-index:2}
-        input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:${c.burgundy};cursor:pointer;box-shadow:0 2px 6px rgba(122,31,43,.3)}
+        input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:${c.burgundy};cursor:pointer;box-shadow:0 2px 6px rgba(122,31,43,.3);transition:width .1s,height .1s,box-shadow .1s}
         input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:${c.burgundy};cursor:pointer;border:none}
+        input[type="range"]::-webkit-slider-thumb:active{width:22px;height:22px;box-shadow:0 0 0 4px rgba(122,31,43,.18)}
+        input[type="range"]::-moz-range-thumb:active{width:22px;height:22px;box-shadow:0 0 0 4px rgba(122,31,43,.18)}
+        .stepper-btn:not(:disabled):active{transform:scale(.88)}
+        .stepper-btn:not(:disabled):hover{background-color:${c.border}}
+        .pill-btn:active{transform:scale(.94)}
         @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
       `}</style>
 
@@ -829,7 +834,7 @@ const Bustometro = () => {
               {regioni.map((reg) => {
                 const sel = regione === reg.id;
                 return (
-                  <button key={reg.id} onClick={() => selectRegione(reg.id)} style={{ padding: '6px 14px', borderRadius: '999px', fontSize: '13px', backgroundColor: sel ? c.gold : 'transparent', color: sel ? c.ink : c.inkSoft, border: `1px solid ${sel ? c.gold : c.border}`, fontWeight: sel ? 600 : 400, cursor: 'pointer', transition: 'all .2s' }}>
+                  <button key={reg.id} className="pill-btn" onClick={() => selectRegione(reg.id)} style={{ padding: '6px 14px', borderRadius: '999px', fontSize: '13px', backgroundColor: sel ? c.gold : 'transparent', color: sel ? c.ink : c.inkSoft, border: `1px solid ${sel ? c.gold : c.border}`, fontWeight: sel ? 600 : 400, cursor: 'pointer', transition: 'all .2s' }}>
                     {reg.emoji} {reg.label}
                   </button>
                 );
@@ -875,7 +880,7 @@ const Bustometro = () => {
                 {presetCoperto.map((p) => {
                   const sel = costoCoperto === p;
                   return (
-                    <button key={p} onClick={() => setCostoCoperto(p)} style={{ padding: '4px 12px', borderRadius: '999px', fontSize: '11px', backgroundColor: sel ? c.gold : 'transparent', color: sel ? c.ink : c.inkSoft, border: `1px solid ${sel ? c.gold : c.border}`, fontWeight: sel ? 500 : 400, cursor: 'pointer', transition: 'all .2s' }}>
+                    <button key={p} className="pill-btn" onClick={() => setCostoCoperto(p)} style={{ padding: '4px 12px', borderRadius: '999px', fontSize: '11px', backgroundColor: sel ? c.gold : 'transparent', color: sel ? c.ink : c.inkSoft, border: `1px solid ${sel ? c.gold : c.border}`, fontWeight: sel ? 500 : 400, cursor: 'pointer', transition: 'all .2s' }}>
                       €{p}
                     </button>
                   );
