@@ -368,6 +368,7 @@ const Bustometro = () => {
   const [regione, setRegione] = useState('centro');
   const reducedMotion = usePrefersReducedMotion();
   const stats = useStats();
+  const [sweepKey, setSweepKey] = useState(0);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -418,6 +419,13 @@ const Bustometro = () => {
   const rangeMin = Math.round((arrotondato * 0.9) / 10) * 10;
   const rangeMax = Math.round((arrotondato * 1.1) / 10) * 10;
   const displayedAmount = useCountUp(isComplete ? arrotondato : 0, 1100);
+
+  // Bump sweepKey dopo il count-up: fa rimontare l'overlay gold sweep
+  useEffect(() => {
+    if (!isComplete) return;
+    const t = setTimeout(() => setSweepKey((k) => k + 1), 1150);
+    return () => clearTimeout(t);
+  }, [isComplete, arrotondato]);
 
   const easterEggMessage = useMemo(() => {
     if (!isComplete) return null;
@@ -717,6 +725,8 @@ const Bustometro = () => {
         @keyframes stampIn { 0%{transform:scale(1)} 40%{transform:scale(1.045) rotate(-0.6deg)} 70%{transform:scale(0.99)} 100%{transform:scale(1)} }
         @keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }
         @keyframes envelopeRise { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes numberSweep { from { background-position: 120% center; } to { background-position: -120% center; } }
+        .number-sweep { position:absolute; inset:0; pointer-events:none; display:flex; align-items:center; justify-content:center; background:linear-gradient(105deg,transparent 38%,rgba(212,181,132,.7) 50%,transparent 62%) no-repeat; background-size:240% auto; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; animation:numberSweep .9s cubic-bezier(.16,1,.3,1) both; }
         .reveal-1{animation:fadeUp .7s cubic-bezier(.16,1,.3,1) .15s both}
         .reveal-2{animation:fadeUp .7s cubic-bezier(.16,1,.3,1) .30s both}
         .reveal-3{animation:fadeUp .7s cubic-bezier(.16,1,.3,1) .45s both}
@@ -913,8 +923,8 @@ const Bustometro = () => {
 
         {/* RESULT */}
         <section style={{ marginBottom: '40px', padding: '32px 24px', borderRadius: '8px', backgroundColor: isComplete ? c.ink : c.bgAlt, color: isComplete ? c.bg : c.inkSoft, border: `1px solid ${isComplete ? c.ink : c.border}`, transition: 'all .5s cubic-bezier(.16,1,.3,1)', position: 'relative', overflow: 'hidden', boxShadow: isComplete ? '0 20px 50px -20px rgba(43,24,16,.4)' : 'none' }}>
-          {isComplete && ['tl', 'tr', 'bl', 'br'].map((pos) => (
-            <div key={pos} style={{ position: 'absolute', top: pos.includes('t') ? 12 : undefined, bottom: pos.includes('b') ? 12 : undefined, left: pos.includes('l') ? 12 : undefined, right: pos.includes('r') ? 12 : undefined, color: c.gold, opacity: 0.6, fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontSize: '12px' }}>~</div>
+          {isComplete && ['tl', 'tr', 'bl', 'br'].map((pos, i) => (
+            <div key={pos} style={{ position: 'absolute', top: pos.includes('t') ? 12 : undefined, bottom: pos.includes('b') ? 12 : undefined, left: pos.includes('l') ? 12 : undefined, right: pos.includes('r') ? 12 : undefined, color: c.gold, opacity: 0.6, fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontSize: '12px', animation: `fadeUp .5s cubic-bezier(.16,1,.3,1) ${i * 0.1}s both` }}>~</div>
           ))}
           <div style={{ textAlign: 'center', position: 'relative' }}>
             <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '12px', color: isComplete ? c.goldSoft : c.inkSoft }}>
@@ -922,8 +932,20 @@ const Bustometro = () => {
             </div>
             {isComplete ? (
               <>
-                <div className="number-display" style={{ fontSize: 'clamp(4rem,18vw,7rem)', lineHeight: 1, margin: '12px 0', color: c.bg, fontWeight: 300 }}>
-                  €{displayedAmount}
+                <div style={{ position: 'relative', display: 'inline-block', margin: '12px 0' }}>
+                  <div className="number-display" style={{ fontSize: 'clamp(4rem,18vw,7rem)', lineHeight: 1, color: c.bg, fontWeight: 300 }}>
+                    €{displayedAmount}
+                  </div>
+                  {!reducedMotion && (
+                    <span
+                      key={sweepKey}
+                      className="number-sweep number-display"
+                      aria-hidden="true"
+                      style={{ fontSize: 'clamp(4rem,18vw,7rem)', lineHeight: 1, fontWeight: 300, whiteSpace: 'nowrap' }}
+                    >
+                      €{displayedAmount}
+                    </span>
+                  )}
                 </div>
                 <div className="display-font" style={{ fontStyle: 'italic', fontSize: '13px', marginBottom: '12px', color: c.goldSoft }}>
                   range consigliato: €{rangeMin} — €{rangeMax}
