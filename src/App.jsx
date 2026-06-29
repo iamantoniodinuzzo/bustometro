@@ -703,7 +703,7 @@ const Bustometro = () => {
   const c = {
     bg: '#F5EFE4', bgAlt: '#EBE3D2', card: '#FBF8F1',
     ink: '#2B1810', inkSoft: '#6B5B4F',
-    burgundy: '#7A1F2B', gold: '#B8924F', goldSoft: '#D4B584',
+    burgundy: '#7A1F2B', gold: '#B8924F', goldSoft: '#D4B584', goldFocus: '#9A7634',
     border: '#D8CDB8',
   };
 
@@ -747,6 +747,8 @@ const Bustometro = () => {
         .stepper-btn:not(:disabled):active{transform:scale(.88)}
         .stepper-btn:not(:disabled):hover{background-color:${c.border}}
         .pill-btn:active{transform:scale(.94)}
+        button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid ${c.goldFocus};outline-offset:3px;border-radius:4px}
+        input[type="range"]:focus-visible{outline:none;box-shadow:0 0 0 2px ${c.goldFocus}}
         @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
       `}</style>
 
