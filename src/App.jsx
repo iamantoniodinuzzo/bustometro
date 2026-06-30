@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Analytics } from "@vercel/analytics/react"
 import { regioni, THEME } from './constants';
-import { useCountUp } from './hooks/useCountUp';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
 import { useStats } from './hooks/useStats';
-import { mapParentela } from './utils/mapParentela';
+import { useToast } from './hooks/useToast';
+import { useBusyGuard } from './hooks/useBusyGuard';
+import { useCalcolo } from './hooks/useCalcolo';
+import { useShareUrl } from './hooks/useShareUrl';
+import { useStatsSubmit } from './hooks/useStatsSubmit';
 import { Atmosphere } from './components/Atmosphere';
 import { Envelope3D } from './components/Envelope3D';
 import { Toast } from './components/Toast';
@@ -29,29 +32,16 @@ const Bustometro = () => {
   const [figura, setFigura] = useState(null);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
-  const [linkCopied, setLinkCopied] = useState(false);
   const [nomineSposi, setNomineSposi] = useState('');
   const [cardFormat, setCardFormat] = useState('story');
   const [cardCopied, setCardCopied] = useState(false);
   const [testimone, setTestimone] = useState(false);
   const [suocera, setSuocera] = useState(false);
   const [regione, setRegione] = useState('centro');
-  const [toast, setToast] = useState(null);
-  const [busyCard, setBusyCard] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
   const stats = useStats();
-  const [sweepKey, setSweepKey] = useState(0);
-
-  const showToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2200);
-  };
-
-  const withBusy = async (fn) => {
-    if (busyCard) return;
-    setBusyCard(true);
-    try { await fn(); } finally { setBusyCard(false); }
-  };
+  const { toast, showToast } = useToast();
+  const { busyCard, withBusy } = useBusyGuard();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -73,45 +63,10 @@ const Bustometro = () => {
     if (['nord', 'centro', 'sud'].includes(r)) setRegione(r);
   }, []);
 
-  const isComplete = parentela !== null && figura !== null;
-  const calcolo = isComplete ? (bambini / 2 + adulti) * (costoCoperto * 1.3) * parentela * figura * (testimone ? 1.3 : 1) : 0;
-  const arrotondato = Math.round(calcolo / 10) * 10;
-  const rangeMin = Math.round((arrotondato * 0.9) / 10) * 10;
-  const rangeMax = Math.round((arrotondato * 1.1) / 10) * 10;
-  const displayedAmount = useCountUp(isComplete ? arrotondato : 0, 1100);
+  const { isComplete, calcolo, arrotondato, rangeMin, rangeMax, displayedAmount, sweepKey, easterEggMessage } =
+    useCalcolo({ parentela, adulti, bambini, costoCoperto, figura, testimone });
 
-  // Bump sweepKey dopo il count-up: fa rimontare l'overlay gold sweep
-  useEffect(() => {
-    if (!isComplete) return;
-    const t = setTimeout(() => setSweepKey((k) => k + 1), 1150);
-    return () => clearTimeout(t);
-  }, [isComplete, arrotondato]);
-
-  const easterEggMessage = useMemo(() => {
-    if (!isComplete) return null;
-    if (parentela === 2.0 && figura === 1.5 && adulti >= 3)
-      return 'Gli sposi ti vogliono come padrino di battesimo del primo figlio.';
-    if (arrotondato > 800)
-      return 'A questo punto compragli anche la casa.';
-    if (parentela === 1.0 && figura === 1.0 && adulti === 1 && bambini === 0 && costoCoperto <= 50)
-      return 'Vabbè dai, almeno gli auguri sinceri 💀';
-    return null;
-  }, [isComplete, parentela, figura, adulti, bambini, costoCoperto, arrotondato]);
-
-  // Incremento stats anonimo — una sola volta per sessione, debounce 2s
-  useEffect(() => {
-    if (!isComplete) return;
-    const timer = setTimeout(() => {
-      if (sessionStorage.getItem('bm_stat_sent')) return;
-      sessionStorage.setItem('bm_stat_sent', '1');
-      fetch('/api/stats', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: mapParentela(parentela), amount: arrotondato }),
-      }).catch(() => { /* silenzioso */ });
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [isComplete, parentela, arrotondato]);
+  useStatsSubmit(isComplete, parentela, arrotondato);
 
   const selectRegione = (id) => {
     const cfg = regioni.find((r) => r.id === id);
@@ -133,23 +88,9 @@ const Bustometro = () => {
     window.history.replaceState(null, '', window.location.pathname);
   };
 
-  const buildShareUrl = () => {
-    const obj = { p: parentela, i: adulti, b: bambini, c: costoCoperto, d: figura, r: regione };
-    if (testimone) obj.t = '1';
-    if (suocera) obj.s = '1';
-    const params = new URLSearchParams(obj);
-    return `${window.location.origin}${window.location.pathname}?${params}`;
-  };
-
-  const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(buildShareUrl());
-      setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2000);
-    } catch {
-      showToast('Copia link non supportata');
-    }
-  };
+  const { buildShareUrl, copyLink, linkCopied } = useShareUrl({
+    parentela, adulti, bambini, costoCoperto, figura, regione, testimone, suocera, showToast,
+  });
 
   const generateCard = async (format) => {
     await document.fonts.ready;
