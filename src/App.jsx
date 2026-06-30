@@ -348,6 +348,33 @@ const Envelope3D = ({ isOpen, reducedMotion }) => {
 };
 
 // ============================================================
+// TOAST
+// ============================================================
+
+const Toast = ({ message }) => {
+  if (!message) return null;
+  return (
+    <div style={{
+      position: 'fixed', bottom: '28px', left: '50%',
+      transform: 'translateX(-50%)',
+      backgroundColor: '#2B1810',
+      color: '#F5EFE4',
+      padding: '10px 20px',
+      borderRadius: '999px',
+      fontSize: '13px',
+      letterSpacing: '0.03em',
+      zIndex: 9999,
+      pointerEvents: 'none',
+      boxShadow: '0 4px 16px rgba(43,24,16,.3)',
+      animation: 'fadeUp .35s cubic-bezier(.16,1,.3,1) both',
+      whiteSpace: 'nowrap',
+    }}>
+      {message}
+    </div>
+  );
+};
+
+// ============================================================
 // MAIN COMPONENT
 // ============================================================
 
@@ -366,9 +393,15 @@ const Bustometro = () => {
   const [testimone, setTestimone] = useState(false);
   const [suocera, setSuocera] = useState(false);
   const [regione, setRegione] = useState('centro');
+  const [toast, setToast] = useState(null);
   const reducedMotion = usePrefersReducedMotion();
   const stats = useStats();
   const [sweepKey, setSweepKey] = useState(0);
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2200);
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -487,7 +520,7 @@ const Bustometro = () => {
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     } catch {
-      /* clipboard non disponibile, ignora */
+      showToast('Copia link non supportata');
     }
   };
 
@@ -665,12 +698,14 @@ const Bustometro = () => {
       a.download = `bustometro-${format}.png`;
       a.click();
       URL.revokeObjectURL(url);
+      showToast('Immagine scaricata ✓');
     }, 'image/png');
   };
 
   const shareWhatsApp = () => {
     const text = encodeURIComponent(`💌 Bustometro dice €${arrotondato} in busta!\n${buildShareUrl()}`);
     window.open(`https://wa.me/?text=${text}`, '_blank');
+    showToast('Aperto WhatsApp');
   };
 
   const copyCard = async (format) => {
@@ -682,7 +717,7 @@ const Bustometro = () => {
           setCardCopied(true);
           setTimeout(() => setCardCopied(false), 2000);
         } catch {
-          /* Clipboard API immagini non supportata */
+          showToast('Copia immagine non supportata');
         }
       }, 'image/png');
     } catch { /* ignora */ }
@@ -697,7 +732,7 @@ const Bustometro = () => {
           await navigator.share({ files: [file], title: 'Bustometro', text: `La mia busta: €${arrotondato} 💌` });
         }
       }, 'image/png');
-    } catch { /* ignora */ }
+    } catch { showToast('Condivisione annullata'); }
   };
 
   const c = {
@@ -1158,6 +1193,7 @@ const Bustometro = () => {
         </footer>
       </div>
       <Analytics />
+      <Toast message={toast} />
     </div>
   );
 };
