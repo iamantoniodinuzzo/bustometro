@@ -8,6 +8,7 @@ import { useStats } from './hooks/useStats';
 import { Atmosphere } from './components/Atmosphere';
 import { Envelope3D } from './components/Envelope3D';
 import { Toast } from './components/Toast';
+import { Stepper } from './components/Stepper';
 
 // Mappa coefficiente parentela → categoria stats
 const mapParentela = (coeff) => {
@@ -364,14 +365,6 @@ const Bustometro = () => {
 
   const c = THEME;
 
-  const stepper = (val, setter, min, max) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-      <button className="stepper-btn" disabled={val <= min} onClick={() => setter(Math.max(min, val - 1))} style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: c.bgAlt, color: c.ink, border: `1px solid ${c.border}`, fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: val <= min ? 0.35 : 1, cursor: val <= min ? 'default' : 'pointer', transition: 'opacity .15s, transform .1s' }}>−</button>
-      <span className="display-font" style={{ fontSize: '24px', width: '32px', textAlign: 'center', color: c.ink, display: 'inline-block' }}>{val}</span>
-      <button className="stepper-btn" disabled={val >= max} onClick={() => setter(Math.min(max, val + 1))} style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: c.bgAlt, color: c.ink, border: `1px solid ${c.border}`, fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: val >= max ? 0.35 : 1, cursor: val >= max ? 'default' : 'pointer', transition: 'opacity .15s, transform .1s' }}>+</button>
-    </div>
-  );
-
   return (
     <div style={{ minHeight: '100vh', width: '100%', backgroundColor: c.bg, fontFamily: "'DM Sans', system-ui, sans-serif", color: c.ink, position: 'relative', overflow: 'hidden' }}>
       <style>{`
@@ -527,7 +520,7 @@ const Bustometro = () => {
                       <div style={{ fontSize: '11px', color: c.inkSoft }}>{row.sub}</div>
                     </div>
                   </div>
-                  {stepper(row.val, row.setter, row.min, row.max)}
+                  <Stepper value={row.val} onChange={row.setter} min={row.min} max={row.max} />
                 </div>
               </div>
             ))}
