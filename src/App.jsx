@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Analytics } from "@vercel/analytics/react"
 import * as THREE from 'three';
 import { Users, Baby, Utensils, Sparkles, ExternalLink, RefreshCw, BookOpen, Crown, Github, Code2, Link2, Check } from 'lucide-react';
+import { VERSION, parentele, figure, regioni, presetCoperto, THEME } from './constants';
 
 // ============================================================
 // HOOKS
@@ -430,29 +431,6 @@ const Bustometro = () => {
     if (['nord', 'centro', 'sud'].includes(r)) setRegione(r);
   }, []);
 
-  const VERSION = '1.6.0';
-
-  const parentele = [
-    { value: 2.0, label: 'Genitore', sublabel: 'Mamma o papà', icon: '👨‍👩‍👧' },
-    { value: 1.5, label: 'Fratello / Sorella', sublabel: 'Stesso sangue', icon: '🫂' },
-    { value: 1.2, label: 'Cugino', sublabel: 'Famiglia allargata', icon: '🌿' },
-    { value: 1.0, label: 'Amico', sublabel: 'O collega', icon: '🤝' },
-  ];
-
-  const figure = [
-    { value: 1.5, label: 'Massimo', subnap: '«Squarcione»', emoji: '😎', desc: 'Spendere senza pensieri' },
-    { value: 1.3, label: 'Medio', subnap: '«Ngannaruto»', emoji: '🙂', desc: 'Generoso ma con misura' },
-    { value: 1.2, label: 'Sufficiente', subnap: '«Bella figura»', emoji: '🤏', desc: 'Dignitoso, niente di più' },
-    { value: 1.0, label: 'Normale', subnap: '«Standard»', emoji: '😐', desc: 'Né troppo né troppo poco' },
-  ];
-
-  const regioni = [
-    { id: 'nord',   label: 'Nord',   emoji: '🏔️', coperto: 70, figura: 1.0  },
-    { id: 'centro', label: 'Centro', emoji: '🏛️', coperto: 80, figura: null },
-    { id: 'sud',    label: 'Sud',    emoji: '🌋', coperto: 90, figura: 1.2  },
-  ];
-
-  const presetCoperto = [50, 80, 120, 160];
   const isComplete = parentela !== null && figura !== null;
   const calcolo = isComplete ? (bambini / 2 + adulti) * (costoCoperto * 1.3) * parentela * figura * (testimone ? 1.3 : 1) : 0;
   const arrotondato = Math.round(calcolo / 10) * 10;
@@ -742,12 +720,7 @@ const Bustometro = () => {
     } catch { showToast('Condivisione annullata'); }
   };
 
-  const c = {
-    bg: '#F5EFE4', bgAlt: '#EBE3D2', card: '#FBF8F1',
-    ink: '#2B1810', inkSoft: '#6B5B4F',
-    burgundy: '#7A1F2B', gold: '#B8924F', goldSoft: '#D4B584', goldFocus: '#9A7634',
-    border: '#D8CDB8',
-  };
+  const c = THEME;
 
   const stepper = (val, setter, min, max) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
