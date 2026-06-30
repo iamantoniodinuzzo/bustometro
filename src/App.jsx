@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Analytics } from "@vercel/analytics/react"
 import { THEME } from './constants';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
