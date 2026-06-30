@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Code2, Crown, Github, ExternalLink } from 'lucide-react';
+import { BookOpen, Code2, Crown, ExternalLink } from 'lucide-react';
 import { VERSION, THEME as c } from '../constants';
 
 export const CreditsFooter = ({ showCredits, setShowCredits }) => (
@@ -22,13 +22,10 @@ export const CreditsFooter = ({ showCredits, setShowCredits }) => (
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '6px', backgroundColor: c.bgAlt }}>
             <div style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: c.burgundy, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span style={{ color: '#FFFCF5', fontSize: '14px', fontFamily: 'Fraunces, serif', fontStyle: 'italic' }}>A</span>
+              <span style={{ color: '#FFFCF5', fontSize: '14px', fontFamily: 'Fraunces, serif', fontStyle: 'italic' }}>I</span>
             </div>
             <div>
-              <div className="display-font" style={{ fontWeight: 600, color: c.ink }}>Antonio Di Nuzzo</div>
-              <a href="https://github.com/iamantoniodinuzzo" target="_blank" rel="noopener noreferrer" style={{ fontSize: '11px', color: c.gold, display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}>
-                <Github size={11} /> github.com/iamantoniodinuzzo
-              </a>
+              <div className="display-font" style={{ fontWeight: 600, color: c.ink }}>Indisparte</div>
             </div>
           </div>
         </div>
@@ -88,8 +85,7 @@ export const CreditsFooter = ({ showCredits, setShowCredits }) => (
         Bustometro <span style={{ color: c.gold }}>·</span> v{VERSION}
       </div>
       <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '2px' }}>
-        Formula © Amedeo Colella · Sviluppato da{' '}
-        <a href="https://github.com/iamantoniodinuzzo" target="_blank" rel="noopener noreferrer" style={{ color: c.gold, textDecoration: 'none' }}>Antonio Di Nuzzo</a>
+        Formula © Amedeo Colella · Sviluppato da Indisparte
       </div>
     </div>
   </footer>
