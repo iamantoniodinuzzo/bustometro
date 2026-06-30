@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Analytics } from "@vercel/analytics/react"
-import { regioni, THEME } from './constants';
+import { THEME } from './constants';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
 import { useStats } from './hooks/useStats';
 import { useToast } from './hooks/useToast';
@@ -8,6 +8,7 @@ import { useBusyGuard } from './hooks/useBusyGuard';
 import { useCalcolo } from './hooks/useCalcolo';
 import { useShareUrl } from './hooks/useShareUrl';
 import { useStatsSubmit } from './hooks/useStatsSubmit';
+import { useFormReducer } from './hooks/useFormReducer';
 import { Atmosphere } from './components/Atmosphere';
 import { Envelope3D } from './components/Envelope3D';
 import { Toast } from './components/Toast';
@@ -25,66 +26,35 @@ import { CreditsFooter } from './components/CreditsFooter';
 // ============================================================
 
 const Bustometro = () => {
-  const [parentela, setParentela] = useState(null);
-  const [adulti, setAdulti] = useState(1);
-  const [bambini, setBambini] = useState(0);
-  const [costoCoperto, setCostoCoperto] = useState(80);
-  const [figura, setFigura] = useState(null);
+  const {
+    parentela, setParentela,
+    adulti, setAdulti,
+    bambini, setBambini,
+    costoCoperto, setCostoCoperto,
+    figura, setFigura,
+    testimone, setTestimone,
+    suocera, setSuocera,
+    regione, selectRegione,
+    reset: resetForm,
+  } = useFormReducer();
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
   const [nomineSposi, setNomineSposi] = useState('');
   const [cardFormat, setCardFormat] = useState('story');
   const [cardCopied, setCardCopied] = useState(false);
-  const [testimone, setTestimone] = useState(false);
-  const [suocera, setSuocera] = useState(false);
-  const [regione, setRegione] = useState('centro');
   const reducedMotion = usePrefersReducedMotion();
   const stats = useStats();
   const { toast, showToast } = useToast();
   const { busyCard, withBusy } = useBusyGuard();
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const p = parseFloat(params.get('p'));
-    const i = parseInt(params.get('i'), 10);
-    const b = parseInt(params.get('b'), 10);
-    const cv = parseFloat(params.get('c'));
-    const d = parseFloat(params.get('d'));
-    const validParentele = [2.0, 1.5, 1.2, 1.0];
-    const validFigure = [1.5, 1.3, 1.2, 1.0];
-    if (validParentele.includes(p)) setParentela(p);
-    if (Number.isFinite(i) && i >= 1 && i <= 10) setAdulti(i);
-    if (Number.isFinite(b) && b >= 0 && b <= 10) setBambini(b);
-    if (Number.isFinite(cv) && cv >= 30 && cv <= 200) setCostoCoperto(cv);
-    if (validFigure.includes(d)) setFigura(d);
-    if (params.get('t') === '1') setTestimone(true);
-    if (params.get('s') === '1') setSuocera(true);
-    const r = params.get('r');
-    if (['nord', 'centro', 'sud'].includes(r)) setRegione(r);
-  }, []);
 
   const { isComplete, calcolo, arrotondato, rangeMin, rangeMax, displayedAmount, sweepKey, easterEggMessage } =
     useCalcolo({ parentela, adulti, bambini, costoCoperto, figura, testimone });
 
   useStatsSubmit(isComplete, parentela, arrotondato);
 
-  const selectRegione = (id) => {
-    const cfg = regioni.find((r) => r.id === id);
-    setRegione(id);
-    setCostoCoperto(cfg.coperto);
-    setFigura(cfg.figura);
-  };
-
   const reset = () => {
-    setParentela(null);
-    setAdulti(1);
-    setBambini(0);
-    setCostoCoperto(80);
-    setFigura(null);
-    setRegione('centro');
+    resetForm();
     setShowBreakdown(false);
-    setTestimone(false);
-    setSuocera(false);
     window.history.replaceState(null, '', window.location.pathname);
   };
 
