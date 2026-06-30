@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Analytics } from "@vercel/analytics/react"
-import { Sparkles, ExternalLink, RefreshCw, BookOpen, Crown, Github, Code2, Link2, Check } from 'lucide-react';
-import { VERSION, regioni, THEME } from './constants';
+import { regioni, THEME } from './constants';
 import { useCountUp } from './hooks/useCountUp';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
 import { useStats } from './hooks/useStats';
+import { mapParentela } from './utils/mapParentela';
 import { Atmosphere } from './components/Atmosphere';
 import { Envelope3D } from './components/Envelope3D';
 import { Toast } from './components/Toast';
@@ -12,14 +12,10 @@ import { Header } from './components/Header';
 import { StepParentela } from './components/StepParentela';
 import { StepPartecipanti } from './components/StepPartecipanti';
 import { StepFigura } from './components/StepFigura';
-
-// Mappa coefficiente parentela → categoria stats
-const mapParentela = (coeff) => {
-  if (coeff === 2.0) return 'genitori';
-  if (coeff === 1.5) return 'fratelli';
-  if (coeff === 1.2) return 'cugini';
-  return 'amici';
-};
+import { ResultCard } from './components/ResultCard';
+import { ShareCard } from './components/ShareCard';
+import { Disclaimer } from './components/Disclaimer';
+import { CreditsFooter } from './components/CreditsFooter';
 
 // ============================================================
 // MAIN COMPONENT
@@ -436,234 +432,32 @@ const Bustometro = () => {
           suocera={suocera} setSuocera={setSuocera}
         />
 
-        {/* RESULT */}
-        <section style={{ marginBottom: '40px', padding: '32px 24px', borderRadius: '8px', backgroundColor: isComplete ? c.ink : c.bgAlt, color: isComplete ? c.bg : c.inkSoft, border: `1px solid ${isComplete ? c.ink : c.border}`, transition: 'all .5s cubic-bezier(.16,1,.3,1)', position: 'relative', overflow: 'hidden', boxShadow: isComplete ? '0 20px 50px -20px rgba(43,24,16,.4)' : 'none' }}>
-          {isComplete && ['tl', 'tr', 'bl', 'br'].map((pos, i) => (
-            <div key={pos} style={{ position: 'absolute', top: pos.includes('t') ? 12 : undefined, bottom: pos.includes('b') ? 12 : undefined, left: pos.includes('l') ? 12 : undefined, right: pos.includes('r') ? 12 : undefined, color: c.gold, opacity: 0.6, fontFamily: 'Fraunces, serif', fontStyle: 'italic', fontSize: '12px', animation: `fadeUp .5s cubic-bezier(.16,1,.3,1) ${i * 0.1}s both` }}>~</div>
-          ))}
-          <div style={{ textAlign: 'center', position: 'relative' }}>
-            <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '12px', color: isComplete ? c.goldSoft : c.inkSoft }}>
-              La tua busta
-            </div>
-            {isComplete ? (
-              <>
-                <div style={{ position: 'relative', display: 'inline-block', margin: '12px 0' }}>
-                  <div className="number-display" style={{ fontSize: 'clamp(4rem,18vw,7rem)', lineHeight: 1, color: c.bg, fontWeight: 300 }}>
-                    €{displayedAmount}
-                  </div>
-                  {!reducedMotion && (
-                    <span
-                      key={sweepKey}
-                      className="number-sweep number-display"
-                      aria-hidden="true"
-                      style={{ fontSize: 'clamp(4rem,18vw,7rem)', lineHeight: 1, fontWeight: 300, whiteSpace: 'nowrap' }}
-                    >
-                      €{displayedAmount}
-                    </span>
-                  )}
-                </div>
-                <div className="display-font" style={{ fontStyle: 'italic', fontSize: '13px', marginBottom: '12px', color: c.goldSoft }}>
-                  range consigliato: €{rangeMin} — €{rangeMax}
-                </div>
-                {suocera && (
-                  <div className="reveal-4 display-font" style={{ fontStyle: 'italic', fontSize: '12px', marginBottom: '16px', color: c.gold, opacity: 0.8 }}>
-                    👁️ Tua suocera sa già quanto hai messo. Lo sa.
-                  </div>
-                )}
-                {easterEggMessage && (
-                  <div className="reveal-5 display-font" style={{ fontStyle: 'italic', fontSize: '13px', marginBottom: '16px', padding: '10px 16px', borderRadius: '6px', border: `1px dashed ${c.gold}`, color: c.goldSoft }}>
-                    {easterEggMessage}
-                  </div>
-                )}
-                {stats?.categories?.[mapParentela(parentela)]?.avg != null && (
-                  <div className="reveal-5" style={{ fontSize: '11px', marginBottom: '16px', color: c.goldSoft, opacity: 0.8 }}>
-                    Media in questa categoria:{' '}
-                    <span style={{ color: c.gold }}>€{stats.categories[mapParentela(parentela)].avg}</span>
-                  </div>
-                )}
-                <button onClick={() => setShowBreakdown(!showBreakdown)} style={{ fontSize: '11px', textDecoration: 'underline', textUnderlineOffset: '4px', background: 'none', border: 'none', color: c.goldSoft, cursor: 'pointer' }}>
-                  {showBreakdown ? 'Nascondi calcolo' : 'Vedi come è stato calcolato'}
-                </button>
-                {showBreakdown && (
-                  <div className="reveal-1" style={{ marginTop: '20px', paddingTop: '20px', textAlign: 'left', borderTop: `1px solid ${c.inkSoft}`, color: c.bg }}>
-                    <div className="display-font" style={{ fontStyle: 'italic', fontSize: '12px', marginBottom: '12px', textAlign: 'center', color: c.goldSoft }}>
-                      € = (B/2 + I) × (C + C×30%) × P × D
-                    </div>
-                    {[
-                      ['Bambini ÷ 2 + Adulti:', `${bambini / 2 + adulti}`],
-                      ['Coperto × 1,3:', `€${(costoCoperto * 1.3).toFixed(2)}`],
-                      ['× Parentela:', `×${parentela}`],
-                      ['× Figura:', `×${figura}`],
-                      ...(testimone ? [['× Testimone:', '×1.3']] : []),
-                    ].map(([label, val]) => (
-                      <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontFamily: 'monospace', opacity: 0.9, marginBottom: '6px' }}>
-                        <span>{label}</span><span>{val}</span>
-                      </div>
-                    ))}
-                    <div className="display-font" style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '8px', marginTop: '8px', borderTop: `1px dashed ${c.inkSoft}` }}>
-                      <span>Totale grezzo:</span><span>€{calcolo.toFixed(2)}</span>
-                    </div>
-                    <div className="display-font" style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 500, color: c.goldSoft, marginTop: '4px' }}>
-                      <span>Arrotondato:</span><span>€{arrotondato}</span>
-                    </div>
-                  </div>
-                )}
-                <div style={{ marginTop: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                  <button onClick={reset} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '11px', padding: '8px 16px', borderRadius: '999px', border: `1px solid ${c.goldSoft}`, color: c.goldSoft, background: 'transparent', cursor: 'pointer' }}>
-                    <RefreshCw size={12} /> Ricomincia
-                  </button>
-                  <button onClick={copyLink} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '11px', padding: '8px 16px', borderRadius: '999px', border: `1px solid ${linkCopied ? c.gold : c.goldSoft}`, color: linkCopied ? c.gold : c.goldSoft, background: linkCopied ? 'rgba(184,146,79,0.12)' : 'transparent', cursor: 'pointer', transition: 'all .2s' }}>
-                    {linkCopied ? <><Check size={12} /> Link copiato!</> : <><Link2 size={12} /> Copia link</>}
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div style={{ padding: '32px 0' }}>
-                <div className="display-font" style={{ fontStyle: 'italic', fontSize: '28px', marginBottom: '8px', color: c.inkSoft }}>€ — , —</div>
-                <div style={{ fontSize: '11px', color: c.inkSoft }}>Completa i passaggi i. e iii. per scoprire la cifra</div>
-              </div>
-            )}
-          </div>
-        </section>
+        <ResultCard
+          isComplete={isComplete} reducedMotion={reducedMotion}
+          displayedAmount={displayedAmount} sweepKey={sweepKey}
+          rangeMin={rangeMin} rangeMax={rangeMax}
+          suocera={suocera} easterEggMessage={easterEggMessage}
+          stats={stats} parentela={parentela}
+          showBreakdown={showBreakdown} setShowBreakdown={setShowBreakdown}
+          bambini={bambini} adulti={adulti} costoCoperto={costoCoperto}
+          figura={figura} testimone={testimone} calcolo={calcolo} arrotondato={arrotondato}
+          reset={reset} copyLink={copyLink} linkCopied={linkCopied}
+        />
 
-        {/* SHARE CARD */}
         {isComplete && (
-          <section style={{ marginBottom: '40px', padding: '24px', borderRadius: '8px', backgroundColor: c.card, border: `1px solid ${c.border}` }}>
-            <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.2em', color: c.inkSoft, marginBottom: '16px' }}>
-              Condividi risultato
-            </div>
-            <input
-              type="text"
-              placeholder="Nome sposi (es. Marco & Giulia)"
-              value={nomineSposi}
-              onChange={(e) => setNomineSposi(e.target.value)}
-              maxLength={50}
-              style={{ width: '100%', padding: '10px 14px', borderRadius: '6px', border: `1px solid ${c.border}`, background: c.bg, color: c.ink, fontSize: '13px', fontFamily: 'inherit', outline: 'none', marginBottom: '12px', boxSizing: 'border-box' }}
-            />
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-              {['story', 'post'].map(f => (
-                <button key={f} onClick={() => setCardFormat(f)} style={{ flex: 1, padding: '8px', borderRadius: '6px', fontSize: '12px', border: `1px solid ${cardFormat === f ? c.burgundy : c.border}`, backgroundColor: cardFormat === f ? c.burgundy : 'transparent', color: cardFormat === f ? '#FFFCF5' : c.inkSoft, cursor: 'pointer', transition: 'all .2s' }}>
-                  {f === 'story' ? '📱 Story 9:16' : '⬛ Post 1:1'}
-                </button>
-              ))}
-            </div>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button onClick={() => withBusy(() => downloadCard(cardFormat))} disabled={busyCard} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px', borderRadius: '999px', border: `1px solid ${c.border}`, color: c.ink, background: c.bg, cursor: busyCard ? 'not-allowed' : 'pointer', opacity: busyCard ? 0.6 : 1 }}>
-                {busyCard ? <RefreshCw size={12} className="spin-icon" /> : '⬇'} Scarica
-              </button>
-              <button onClick={shareWhatsApp} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px', borderRadius: '999px', border: `1px solid ${c.border}`, color: c.ink, background: c.bg, cursor: 'pointer' }}>
-                💬 WhatsApp
-              </button>
-              <button onClick={() => withBusy(() => copyCard(cardFormat))} disabled={busyCard} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px', borderRadius: '999px', border: `1px solid ${cardCopied ? c.gold : c.border}`, color: cardCopied ? c.gold : c.ink, background: cardCopied ? 'rgba(184,146,79,0.1)' : c.bg, cursor: busyCard ? 'not-allowed' : 'pointer', opacity: busyCard ? 0.6 : 1, transition: 'all .2s' }}>
-                {busyCard ? <><RefreshCw size={12} className="spin-icon" /> Copia immagine</> : cardCopied ? '✓ Copiata!' : '📋 Copia immagine'}
-              </button>
-              {typeof navigator !== 'undefined' && navigator.share && (
-                <button onClick={() => withBusy(() => nativeShare(cardFormat))} disabled={busyCard} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px', borderRadius: '999px', border: `1px solid ${c.border}`, color: c.ink, background: c.bg, cursor: busyCard ? 'not-allowed' : 'pointer', opacity: busyCard ? 0.6 : 1 }}>
-                  {busyCard ? <><RefreshCw size={12} className="spin-icon" /> Condividi</> : '↗ Condividi'}
-                </button>
-              )}
-            </div>
-          </section>
+          <ShareCard
+            nomineSposi={nomineSposi} setNomineSposi={setNomineSposi}
+            cardFormat={cardFormat} setCardFormat={setCardFormat}
+            busyCard={busyCard} withBusy={withBusy}
+            downloadCard={downloadCard} shareWhatsApp={shareWhatsApp}
+            copyCard={copyCard} nativeShare={nativeShare}
+            cardCopied={cardCopied}
+          />
         )}
 
-        {/* Disclaimer */}
-        <div style={{ textAlign: 'center', marginBottom: '32px', fontSize: '12px', fontStyle: 'italic', padding: '0 16px', color: c.inkSoft }}>
-          <Sparkles size={14} style={{ display: 'inline', marginBottom: '-2px', marginRight: '4px', color: c.gold }} />
-          La formula è ironica per natura. Il risultato è un'ottima guida, ma alla fine il vero metro è l'affetto.{' '}
-          <em>E quanto puoi permetterti.</em>
-        </div>
+        <Disclaimer />
 
-        {/* Credits */}
-        <footer style={{ borderTop: `1px solid ${c.border}`, paddingTop: '24px' }}>
-          <button onClick={() => setShowCredits(!showCredits)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textAlign: 'left', marginBottom: '12px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <BookOpen size={14} style={{ color: c.burgundy }} />
-              <span className="display-font" style={{ fontSize: '14px', fontWeight: 500, color: c.ink }}>Crediti e fonti</span>
-            </div>
-            <span style={{ fontSize: '12px', color: c.inkSoft }}>{showCredits ? '−' : '+'}</span>
-          </button>
-
-          {showCredits && (
-            <div className="reveal-1" style={{ fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '16px', color: c.inkSoft }}>
-              {/* Developer */}
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <Code2 size={14} style={{ color: c.gold }} />
-                  <span className="display-font" style={{ fontWeight: 500, color: c.ink }}>Sviluppatore</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '6px', backgroundColor: c.bgAlt }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: c.burgundy, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span style={{ color: '#FFFCF5', fontSize: '14px', fontFamily: 'Fraunces, serif', fontStyle: 'italic' }}>A</span>
-                  </div>
-                  <div>
-                    <div className="display-font" style={{ fontWeight: 600, color: c.ink }}>Antonio Di Nuzzo</div>
-                    <a href="https://github.com/iamantoniodinuzzo" target="_blank" rel="noopener noreferrer" style={{ fontSize: '11px', color: c.gold, display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}>
-                      <Github size={11} /> github.com/iamantoniodinuzzo
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              {/* Formula author */}
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <Crown size={14} style={{ color: c.gold }} />
-                  <span className="display-font" style={{ fontWeight: 500, color: c.ink }}>Inventore della formula</span>
-                </div>
-                <p style={{ lineHeight: 1.6, paddingLeft: '24px', margin: 0 }}>
-                  Formula ideata da <strong style={{ color: c.burgundy }}>Amedeo Colella</strong>, scrittore e docente di napoletanità presso la fondazione Humaniter. Pubblicata a <em>pagina 145</em> del <em>Manuale di filosofia napoletana</em> (Cultura Nova editore).
-                </p>
-              </div>
-
-              {/* Formula */}
-              <div>
-                <div className="display-font" style={{ fontWeight: 500, marginBottom: '8px', color: c.ink }}>La formula originale</div>
-                <div style={{ padding: '12px', borderRadius: '4px', fontFamily: 'monospace', fontSize: '12px', backgroundColor: c.bgAlt, color: c.ink }}>
-                  € = (B/2 + I) × (C + C×30%) × P × D
-                </div>
-                <p style={{ fontSize: '11px', marginTop: '8px', lineHeight: 1.6 }}>
-                  Nell'originale napoletano, D si chiama <em>"squarciunaria"</em>: Squarcione (1,5), Ngannaruto (1,3), «Amma fa' 'na bella figura» (1,2), Normale (1,0).
-                </p>
-              </div>
-
-              {/* References */}
-              <div>
-                <div className="display-font" style={{ fontWeight: 500, marginBottom: '8px', color: c.ink }}>Riferimenti</div>
-                <ul style={{ padding: 0, margin: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {[
-                    ['https://www.restoalsud.it/primo-piano/quanto-mettere-nella-busta-del-matrimonio-lo-svela-una-formula-matematica-napoletana/', 'Resto al Sud · La formula matematica napoletana'],
-                    ['https://www.sfilate.it/376460/sposi-non-sai-quanto-mettere-nella-busta-il-calcolo-esatto-per-evitare-figuracce/', 'Sfilate · Il calcolo esatto'],
-                    ['https://www.trend-online.com/lusso/matrimonio-quanto-regalare-soldi-busta/', 'Trend Online · Quanto regalare al matrimonio'],
-                  ].map(([href, label]) => (
-                    <li key={href} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '11px' }}>
-                      <ExternalLink size={11} style={{ marginTop: '2px', flexShrink: 0, color: c.gold }} />
-                      <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: c.burgundy, textDecoration: 'none' }}>{label}</a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Changelog */}
-              <div>
-                <div className="display-font" style={{ fontWeight: 500, marginBottom: '8px', color: c.ink }}>Changelog</div>
-                <div style={{ fontSize: '11px', lineHeight: 1.9, paddingLeft: '8px' }}>
-                  <div><strong style={{ color: c.burgundy }}>v1.3.1</strong> — Busta 3D Three.js, polvere d'oro, coriandoli, count-up, micro-animazioni</div>
-                  <div style={{ opacity: 0.6 }}><strong>v1.0.0</strong> — Versione iniziale</div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div style={{ textAlign: 'center', paddingTop: '16px', marginTop: '8px', fontSize: '11px', color: c.inkSoft, borderTop: `1px dashed ${c.border}` }}>
-            <div className="display-font" style={{ fontStyle: 'italic' }}>
-              Bustometro <span style={{ color: c.gold }}>·</span> v{VERSION}
-            </div>
-            <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '2px' }}>
-              Formula © Amedeo Colella · Sviluppato da{' '}
-              <a href="https://github.com/iamantoniodinuzzo" target="_blank" rel="noopener noreferrer" style={{ color: c.gold, textDecoration: 'none' }}>Antonio Di Nuzzo</a>
-            </div>
-          </div>
-        </footer>
+        <CreditsFooter showCredits={showCredits} setShowCredits={setShowCredits} />
       </div>
       <Analytics />
       <Toast message={toast} />
