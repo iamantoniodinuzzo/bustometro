@@ -394,6 +394,7 @@ const Bustometro = () => {
   const [suocera, setSuocera] = useState(false);
   const [regione, setRegione] = useState('centro');
   const [toast, setToast] = useState(null);
+  const [busyCard, setBusyCard] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
   const stats = useStats();
   const [sweepKey, setSweepKey] = useState(0);
@@ -401,6 +402,12 @@ const Bustometro = () => {
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2200);
+  };
+
+  const withBusy = async (fn) => {
+    if (busyCard) return;
+    setBusyCard(true);
+    try { await fn(); } finally { setBusyCard(false); }
   };
 
   useEffect(() => {
@@ -761,6 +768,8 @@ const Bustometro = () => {
         @keyframes shimmer { 0%,100%{opacity:0.6} 50%{opacity:1} }
         @keyframes envelopeRise { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
         @keyframes numberSweep { from { background-position: 120% center; } to { background-position: -120% center; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin-icon { animation: spin .8s linear infinite; display: inline-block; }
         .number-sweep { position:absolute; inset:0; pointer-events:none; display:flex; align-items:center; justify-content:center; background:linear-gradient(105deg,transparent 38%,rgba(212,181,132,.7) 50%,transparent 62%) no-repeat; background-size:240% auto; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; animation:numberSweep .9s cubic-bezier(.16,1,.3,1) both; }
         .reveal-1{animation:fadeUp .7s cubic-bezier(.16,1,.3,1) .15s both}
         .reveal-2{animation:fadeUp .7s cubic-bezier(.16,1,.3,1) .30s both}
@@ -802,18 +811,24 @@ const Bustometro = () => {
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
             <span className="shimmer-text" style={{ color: c.gold, fontSize: '11px', letterSpacing: '0.4em' }}>✦ ✦ ✦</span>
           </div>
-          <div className="reveal-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '4px 12px', borderRadius: '999px', marginBottom: stats?.total ? '8px' : '16px', backgroundColor: c.bgAlt, color: c.inkSoft, fontSize: '11px', letterSpacing: '0.1em' }}>
+          <div className="reveal-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '4px 12px', borderRadius: '999px', marginBottom: '8px', backgroundColor: c.bgAlt, color: c.inkSoft, fontSize: '11px', letterSpacing: '0.1em' }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: c.burgundy, display: 'inline-block' }} />
             BUSTOMETRO · v{VERSION}
           </div>
-          {stats?.total > 0 && (
-            <div className="reveal-1" style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+          {/* Riga stat — altezza riservata anche pre-fetch: niente jump */}
+          <div className="reveal-1" style={{
+            display: 'flex', justifyContent: 'center', marginBottom: '16px',
+            minHeight: '18px',
+            opacity: stats?.total > 0 ? 1 : 0,
+            transition: 'opacity .4s ease',
+          }}>
+            {stats?.total > 0 && (
               <span style={{ fontSize: '11px', color: c.inkSoft, letterSpacing: '0.08em' }}>
                 <span style={{ color: c.gold }}>✦</span>{' '}
                 {stats.total.toLocaleString('it-IT')} buste calcolate questo mese
               </span>
-            </div>
-          )}
+            )}
+          </div>
           <h1 className="display-font reveal-2" style={{ color: c.ink, fontSize: 'clamp(2.5rem, 8vw, 4.5rem)', fontWeight: 400, lineHeight: '0.95', margin: '0 0 12px', fontVariationSettings: "'opsz' 144, 'SOFT' 100, 'WONK' 1" }}>
             Quanto metto<br />
             <em style={{ color: c.burgundy, fontStyle: 'italic', fontWeight: 300 }}>in busta?</em>
@@ -1075,18 +1090,18 @@ const Bustometro = () => {
               ))}
             </div>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button onClick={() => downloadCard(cardFormat)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px', borderRadius: '999px', border: `1px solid ${c.border}`, color: c.ink, background: c.bg, cursor: 'pointer' }}>
-                ⬇ Scarica
+              <button onClick={() => withBusy(() => downloadCard(cardFormat))} disabled={busyCard} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px', borderRadius: '999px', border: `1px solid ${c.border}`, color: c.ink, background: c.bg, cursor: busyCard ? 'not-allowed' : 'pointer', opacity: busyCard ? 0.6 : 1 }}>
+                {busyCard ? <RefreshCw size={12} className="spin-icon" /> : '⬇'} Scarica
               </button>
               <button onClick={shareWhatsApp} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px', borderRadius: '999px', border: `1px solid ${c.border}`, color: c.ink, background: c.bg, cursor: 'pointer' }}>
                 💬 WhatsApp
               </button>
-              <button onClick={() => copyCard(cardFormat)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px', borderRadius: '999px', border: `1px solid ${cardCopied ? c.gold : c.border}`, color: cardCopied ? c.gold : c.ink, background: cardCopied ? 'rgba(184,146,79,0.1)' : c.bg, cursor: 'pointer', transition: 'all .2s' }}>
-                {cardCopied ? '✓ Copiata!' : '📋 Copia immagine'}
+              <button onClick={() => withBusy(() => copyCard(cardFormat))} disabled={busyCard} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px', borderRadius: '999px', border: `1px solid ${cardCopied ? c.gold : c.border}`, color: cardCopied ? c.gold : c.ink, background: cardCopied ? 'rgba(184,146,79,0.1)' : c.bg, cursor: busyCard ? 'not-allowed' : 'pointer', opacity: busyCard ? 0.6 : 1, transition: 'all .2s' }}>
+                {busyCard ? <><RefreshCw size={12} className="spin-icon" /> Copia immagine</> : cardCopied ? '✓ Copiata!' : '📋 Copia immagine'}
               </button>
               {typeof navigator !== 'undefined' && navigator.share && (
-                <button onClick={() => nativeShare(cardFormat)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px', borderRadius: '999px', border: `1px solid ${c.border}`, color: c.ink, background: c.bg, cursor: 'pointer' }}>
-                  ↗ Condividi
+                <button onClick={() => withBusy(() => nativeShare(cardFormat))} disabled={busyCard} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px', borderRadius: '999px', border: `1px solid ${c.border}`, color: c.ink, background: c.bg, cursor: busyCard ? 'not-allowed' : 'pointer', opacity: busyCard ? 0.6 : 1 }}>
+                  {busyCard ? <><RefreshCw size={12} className="spin-icon" /> Condividi</> : '↗ Condividi'}
                 </button>
               )}
             </div>
