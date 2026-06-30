@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Analytics } from "@vercel/analytics/react"
-import { Users, Baby, Utensils, Sparkles, ExternalLink, RefreshCw, BookOpen, Crown, Github, Code2, Link2, Check } from 'lucide-react';
-import { VERSION, parentele, figure, regioni, presetCoperto, THEME } from './constants';
+import { Sparkles, ExternalLink, RefreshCw, BookOpen, Crown, Github, Code2, Link2, Check } from 'lucide-react';
+import { VERSION, regioni, THEME } from './constants';
 import { useCountUp } from './hooks/useCountUp';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
 import { useStats } from './hooks/useStats';
 import { Atmosphere } from './components/Atmosphere';
 import { Envelope3D } from './components/Envelope3D';
 import { Toast } from './components/Toast';
-import { Stepper } from './components/Stepper';
+import { Header } from './components/Header';
+import { StepParentela } from './components/StepParentela';
+import { StepPartecipanti } from './components/StepPartecipanti';
+import { StepFigura } from './components/StepFigura';
 
 // Mappa coefficiente parentela → categoria stats
 const mapParentela = (coeff) => {
@@ -414,177 +417,24 @@ const Bustometro = () => {
           <Envelope3D isOpen={isComplete} reducedMotion={reducedMotion} />
         </div>
 
-        {/* HEADER */}
-        <header style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
-            <span className="shimmer-text" style={{ color: c.gold, fontSize: '11px', letterSpacing: '0.4em' }}>✦ ✦ ✦</span>
-          </div>
-          <div className="reveal-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '4px 12px', borderRadius: '999px', marginBottom: '8px', backgroundColor: c.bgAlt, color: c.inkSoft, fontSize: '11px', letterSpacing: '0.1em' }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: c.burgundy, display: 'inline-block' }} />
-            BUSTOMETRO · v{VERSION}
-          </div>
-          {/* Riga stat — altezza riservata anche pre-fetch: niente jump */}
-          <div className="reveal-1" style={{
-            display: 'flex', justifyContent: 'center', marginBottom: '16px',
-            minHeight: '18px',
-            opacity: stats?.total > 0 ? 1 : 0,
-            transition: 'opacity .4s ease',
-          }}>
-            {stats?.total > 0 && (
-              <span style={{ fontSize: '11px', color: c.inkSoft, letterSpacing: '0.08em' }}>
-                <span style={{ color: c.gold }}>✦</span>{' '}
-                {stats.total.toLocaleString('it-IT')} buste calcolate questo mese
-              </span>
-            )}
-          </div>
-          <h1 className="display-font reveal-2" style={{ color: c.ink, fontSize: 'clamp(2.5rem, 8vw, 4.5rem)', fontWeight: 400, lineHeight: '0.95', margin: '0 0 12px', fontVariationSettings: "'opsz' 144, 'SOFT' 100, 'WONK' 1" }}>
-            Quanto metto<br />
-            <em style={{ color: c.burgundy, fontStyle: 'italic', fontWeight: 300 }}>in busta?</em>
-          </h1>
-          <div className="deco-line" style={{ height: '1px', margin: '20px auto', background: `linear-gradient(to right, transparent, ${c.gold}, transparent)` }} />
-          <p className="reveal-3" style={{ fontSize: '14px', maxWidth: '400px', margin: '0 auto', lineHeight: 1.6, color: c.inkSoft }}>
-            La formula napoletana per non fare brutta figura agli sposi.
-            Compilala e scopri la cifra giusta.
-          </p>
-        </header>
+        <Header stats={stats} />
 
-        {/* STEP i – Parentela */}
-        <section className="reveal-3" style={{ marginBottom: '40px' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '20px' }}>
-            <span className="display-font" style={{ color: c.gold, fontStyle: 'italic', fontSize: '24px' }}>i.</span>
-            <h2 className="display-font" style={{ color: c.ink, fontSize: '22px', margin: 0 }}>Per chi è la busta?</h2>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-            {parentele.map((p) => {
-              const sel = parentela === p.value;
-              return (
-                <button key={p.value} onClick={() => setParentela(p.value)}
-                  className={`step-card${sel ? ' stamped' : ''}`}
-                  style={{ padding: '16px', borderRadius: '8px', textAlign: 'left', backgroundColor: sel ? c.burgundy : c.card, border: `1px solid ${sel ? c.burgundy : c.border}`, color: sel ? '#FFFCF5' : c.ink, boxShadow: sel ? '0 6px 18px rgba(122,31,43,.18)' : 'none', cursor: 'pointer' }}>
-                  <div style={{ fontSize: '24px', marginBottom: '8px' }}>{p.icon}</div>
-                  <div className="display-font" style={{ fontSize: '15px', fontWeight: 500, lineHeight: 1.2 }}>{p.label}</div>
-                  <div style={{ fontSize: '11px', marginTop: '4px', color: sel ? c.goldSoft : c.inkSoft }}>
-                    {p.sublabel} · ×{p.value}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-          <button onClick={() => setTestimone(!testimone)}
-            className={`step-card${testimone ? ' stamped' : ''}`}
-            style={{ marginTop: '12px', width: '100%', padding: '14px 16px', borderRadius: '8px', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: testimone ? c.burgundy : c.card, border: `1px solid ${testimone ? c.burgundy : c.border}`, color: testimone ? '#FFFCF5' : c.ink, boxShadow: testimone ? '0 6px 18px rgba(122,31,43,.18)' : 'none', cursor: 'pointer' }}>
-            <div>
-              <div className="display-font" style={{ fontSize: '14px', fontWeight: 500 }}>Testimone 💍</div>
-              <div style={{ fontSize: '11px', marginTop: '2px', color: testimone ? c.goldSoft : c.inkSoft }}>Hai detto sì. Anche al portafogli.</div>
-            </div>
-            <div className="display-font" style={{ fontSize: '13px', color: testimone ? c.goldSoft : c.inkSoft }}>×1.3</div>
-          </button>
-        </section>
+        <StepParentela
+          parentela={parentela} setParentela={setParentela}
+          testimone={testimone} setTestimone={setTestimone}
+        />
 
-        {/* STEP ii – Partecipanti */}
-        <section className="reveal-4" style={{ marginBottom: '40px' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '20px' }}>
-            <span className="display-font" style={{ color: c.gold, fontStyle: 'italic', fontSize: '24px' }}>ii.</span>
-            <h2 className="display-font" style={{ color: c.ink, fontSize: '22px', margin: 0 }}>Chi partecipa?</h2>
-          </div>
+        <StepPartecipanti
+          regione={regione} selectRegione={selectRegione}
+          adulti={adulti} setAdulti={setAdulti}
+          bambini={bambini} setBambini={setBambini}
+          costoCoperto={costoCoperto} setCostoCoperto={setCostoCoperto}
+        />
 
-          {/* Selettore regionale */}
-          <div style={{ marginBottom: '16px' }}>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
-              {regioni.map((reg) => {
-                const sel = regione === reg.id;
-                return (
-                  <button key={reg.id} className="pill-btn" onClick={() => selectRegione(reg.id)} style={{ padding: '6px 14px', borderRadius: '999px', fontSize: '13px', backgroundColor: sel ? c.gold : 'transparent', color: sel ? c.ink : c.inkSoft, border: `1px solid ${sel ? c.gold : c.border}`, fontWeight: sel ? 600 : 400, cursor: 'pointer', transition: 'all .2s' }}>
-                    {reg.emoji} {reg.label}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="display-font" style={{ fontSize: '12px', fontStyle: 'italic', color: c.inkSoft }}>
-              <Sparkles size={12} style={{ display: 'inline', marginBottom: '-2px', marginRight: '4px', color: c.gold }} />
-              <em>Le aspettative variano. Come i cognati.</em>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {[
-              { icon: <Users size={18} style={{ color: c.burgundy }} />, label: 'Adulti', sub: 'Te incluso', val: adulti, setter: setAdulti, min: 1, max: 10 },
-              { icon: <Baby size={18} style={{ color: c.burgundy }} />, label: 'Bambini', sub: 'Contano la metà', val: bambini, setter: setBambini, min: 0, max: 10 },
-            ].map((row) => (
-              <div key={row.label} style={{ padding: '16px', borderRadius: '8px', backgroundColor: c.card, border: `1px solid ${c.border}` }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    {row.icon}
-                    <div>
-                      <div className="display-font" style={{ fontWeight: 500 }}>{row.label}</div>
-                      <div style={{ fontSize: '11px', color: c.inkSoft }}>{row.sub}</div>
-                    </div>
-                  </div>
-                  <Stepper value={row.val} onChange={row.setter} min={row.min} max={row.max} />
-                </div>
-              </div>
-            ))}
-            <div style={{ padding: '16px', borderRadius: '8px', backgroundColor: c.card, border: `1px solid ${c.border}` }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Utensils size={18} style={{ color: c.burgundy }} />
-                  <div>
-                    <div className="display-font" style={{ fontWeight: 500 }}>Costo coperto</div>
-                    <div style={{ fontSize: '11px', color: c.inkSoft }}>Stima a persona</div>
-                  </div>
-                </div>
-                <div className="display-font" style={{ fontSize: '24px', color: c.ink }}>€{costoCoperto}</div>
-              </div>
-              <input type="range" min="30" max="200" step="5" value={costoCoperto} onChange={(e) => setCostoCoperto(Number(e.target.value))} style={{ width: '100%', marginBottom: '12px', accentColor: c.burgundy }} />
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {presetCoperto.map((p) => {
-                  const sel = costoCoperto === p;
-                  return (
-                    <button key={p} className="pill-btn" onClick={() => setCostoCoperto(p)} style={{ padding: '4px 12px', borderRadius: '999px', fontSize: '11px', backgroundColor: sel ? c.gold : 'transparent', color: sel ? c.ink : c.inkSoft, border: `1px solid ${sel ? c.gold : c.border}`, fontWeight: sel ? 500 : 400, cursor: 'pointer', transition: 'all .2s' }}>
-                      €{p}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* STEP iii – Figura */}
-        <section className="reveal-5" style={{ marginBottom: '40px' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '20px' }}>
-            <span className="display-font" style={{ color: c.gold, fontStyle: 'italic', fontSize: '24px' }}>iii.</span>
-            <h2 className="display-font" style={{ color: c.ink, fontSize: '22px', margin: 0 }}>Che figura vuoi fare?</h2>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {figure.map((f) => {
-              const sel = figura === f.value;
-              return (
-                <button key={f.value} onClick={() => setFigura(f.value)}
-                  className={`step-card${sel ? ' stamped' : ''}`}
-                  style={{ width: '100%', padding: '16px', borderRadius: '8px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '16px', backgroundColor: sel ? c.burgundy : c.card, border: `1px solid ${sel ? c.burgundy : c.border}`, color: sel ? '#FFFCF5' : c.ink, boxShadow: sel ? '0 6px 18px rgba(122,31,43,.18)' : 'none', cursor: 'pointer' }}>
-                  <span style={{ fontSize: '24px' }}>{f.emoji}</span>
-                  <div style={{ flex: 1 }}>
-                    <div className="display-font" style={{ fontSize: '15px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {f.label}
-                      <span style={{ fontSize: '11px', fontStyle: 'italic', color: sel ? c.goldSoft : c.gold, fontWeight: 300 }}>{f.subnap}</span>
-                    </div>
-                    <div style={{ fontSize: '11px', marginTop: '2px', color: sel ? '#FFFCF5' : c.inkSoft, opacity: 0.85 }}>{f.desc}</div>
-                  </div>
-                  <div className="display-font" style={{ fontSize: '13px', color: sel ? c.goldSoft : c.inkSoft }}>×{f.value}</div>
-                </button>
-              );
-            })}
-          </div>
-          <button onClick={() => setSuocera(!suocera)}
-            className={`step-card${suocera ? ' stamped' : ''}`}
-            style={{ marginTop: '12px', width: '100%', padding: '14px 16px', borderRadius: '8px', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: suocera ? c.burgundy : c.card, border: `1px solid ${suocera ? c.burgundy : c.border}`, color: suocera ? '#FFFCF5' : c.ink, boxShadow: suocera ? '0 6px 18px rgba(122,31,43,.18)' : 'none', cursor: 'pointer' }}>
-            <div>
-              <div className="display-font" style={{ fontSize: '14px', fontWeight: 500 }}>Modalità Suocera 👁️</div>
-              <div style={{ fontSize: '11px', marginTop: '2px', color: suocera ? c.goldSoft : c.inkSoft }}>Lei lo sa. Sempre.</div>
-            </div>
-          </button>
-        </section>
+        <StepFigura
+          figura={figura} setFigura={setFigura}
+          suocera={suocera} setSuocera={setSuocera}
+        />
 
         {/* RESULT */}
         <section style={{ marginBottom: '40px', padding: '32px 24px', borderRadius: '8px', backgroundColor: isComplete ? c.ink : c.bgAlt, color: isComplete ? c.bg : c.inkSoft, border: `1px solid ${isComplete ? c.ink : c.border}`, transition: 'all .5s cubic-bezier(.16,1,.3,1)', position: 'relative', overflow: 'hidden', boxShadow: isComplete ? '0 20px 50px -20px rgba(43,24,16,.4)' : 'none' }}>
