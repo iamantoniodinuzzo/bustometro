@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0]
+
+### Added
+- **Gold sweep + corner draw-in** — animazione di reveal del risultato con un colpo di luce dorata one-shot sul numero e disegno progressivo degli ornamenti angolari, per chiudere il rituale visivo del count-up.
+- **Micro-feedback fisico sui controlli** — stepper, range e pill rispondono con micro-animazioni tattili al tocco, incluso lo stato disabled.
+- **Focus-visible ring dorato** — anello di focus dorato coerente su bottoni, input e link per la navigazione da tastiera (a11y).
+- **Sistema di Toast** — feedback visivo per azioni silenziose come download della card, condivisione e copia negli appunti.
+- **Busy-state anti-doppio-tap** — le card di condivisione bloccano i tap ripetuti durante la generazione asincrona; risolto anche il layout shift dell'header causato dal caricamento ritardato delle statistiche.
+
+### Changed
+- **Refactor architetturale** — estrazione di componenti, hook e costanti da `App.jsx` in moduli dedicati, per una base di codice più manutenibile.
+
 ## [1.6.0] - 2026-06-02
 
 ### Added
