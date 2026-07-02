@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.7.0]
+## [1.7.0] - 2026-07-02
 
 ### Added
 - **Gold sweep + corner draw-in** — animazione di reveal del risultato con un colpo di luce dorata one-shot sul numero e disegno progressivo degli ornamenti angolari, per chiudere il rituale visivo del count-up.
