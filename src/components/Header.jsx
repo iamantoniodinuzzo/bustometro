@@ -30,7 +30,7 @@ export const Header = ({ stats }) => (
     </h1>
     <div className="deco-line" style={{ height: '1px', margin: '20px auto', background: `linear-gradient(to right, transparent, ${c.gold}, transparent)` }} />
     <p className="reveal-3" style={{ fontSize: '14px', maxWidth: '400px', margin: '0 auto', lineHeight: 1.6, color: c.inkSoft }}>
-      La formula napoletana per non fare brutta figura agli sposi.
+      La formula napoletana per non fare brutta figura con gli sposi.
       Compilala e scopri la cifra giusta.
     </p>
   </header>
