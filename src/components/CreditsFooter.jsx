@@ -73,7 +73,8 @@ export const CreditsFooter = ({ showCredits, setShowCredits }) => (
         <div>
           <div className="display-font" style={{ fontWeight: 500, marginBottom: '8px', color: c.ink }}>Changelog</div>
           <div style={{ fontSize: '11px', lineHeight: 1.9, paddingLeft: '8px' }}>
-            <div><strong style={{ color: c.burgundy }}>v1.3.1</strong> — Busta 3D Three.js, polvere d'oro, coriandoli, count-up, micro-animazioni</div>
+            <div><strong style={{ color: c.burgundy }}>v1.7.0</strong> — Gold sweep reveal, micro-feedback sui controlli, toast, focus a11y</div>
+            <div style={{ opacity: 0.6 }}><strong>v1.3.1</strong> — Busta 3D Three.js, polvere d'oro, coriandoli, count-up, micro-animazioni</div>
             <div style={{ opacity: 0.6 }}><strong>v1.0.0</strong> — Versione iniziale</div>
           </div>
         </div>
